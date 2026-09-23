@@ -5,15 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tidewatch</title>
 <meta name="description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:title" content="Tidewatch">
+<meta property="og:description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0A2340">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600&display=swap">
 <style>
 [hidden]{display:none!important}
 :root{
   color-scheme: light;
-  --ground:#F2F5F6; --surface:#FFFFFF; --surface-2:#E8EEF0; --ink:#0F1D2B; --muted:#56687A; --line:#D3DDE2;
-  --accent:#0B7A72; --accent-soft:#D6EEEA; --accent-ink:#FFFFFF;
+  --ground:#F2F5F6; --surface:#FFFFFF; --surface-2:#E8EEF0; --ink:#0A2340; --muted:#56687A; --line:#D3DDE2;
+  --accent:#0D7480; --accent-soft:#D5EEEC; --accent-ink:#FFFFFF;
   --low:#23804F; --low-soft:#DCF0E4; --mid:#A86B00; --mid-soft:#F6EACB; --high:#B83A26; --high-soft:#F6DDD7;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
   --body:"IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -43,7 +50,11 @@ a{color:var(--accent)}
 /* header */
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;margin-bottom:22px}
 .brand{display:flex;flex-direction:column;gap:4px}
-.brand .mark{font:700 13px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.logo{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);margin-bottom:14px;width:fit-content}
+.logo img{width:52px;height:52px;flex:none}
+.logo .word{font:600 22px/1 "Montserrat", var(--body);letter-spacing:.12em}
+.logo .word b{font-weight:600;color:var(--accent)}
+.logo small{display:block;margin-top:5px;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 h1{font:700 clamp(28px,4.6vw,44px)/1.05 var(--display);margin:0;letter-spacing:-.015em;text-wrap:balance;max-width:22ch}
 .lede{margin:10px 0 0;color:var(--muted);max-width:62ch}
 .source{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
@@ -158,7 +169,7 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-si
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <span class="mark">Tidewatch · Robinhood Chain</span>
+      <a class="logo" href="/" aria-label="Tidewatch home"><img src="assets/logo-mark.png" alt="" width="52" height="52"><span><span class="word">TIDE<b>WATCH</b></span><small>Robinhood Chain yields</small></span></a>
       <h1>Where do your stock tokens and stablecoins earn the most?</h1>
       <p class="lede">Every yield pool on Robinhood Chain in one place, sorted by return and weighted with a risk score, so the big numbers never stand alone.</p>
     </div>
