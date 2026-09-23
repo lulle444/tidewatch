@@ -113,7 +113,7 @@
   <section class="block" aria-labelledby="howH">
     <div class="sectionhead"><div><p class="eyebrow">How it works</p><h2 id="howH">From raw on-chain data to a clear choice</h2></div></div>
     <ol class="steps">
-      <li class="glass"><span class="stepnum">01</span><h3>We collect</h3><p>Every Robinhood Chain pool listed on DefiLlama, which reads APY and TVL straight from the contracts. Fetched fresh when you open the site.</p></li>
+      <li class="glass"><span class="stepnum">01</span><h3>We collect</h3><p>Every Robinhood Chain pool listed on DefiLlama, which reads APY and TVL straight from the contracts. Refreshed every 10 minutes.</p></li>
       <li class="glass"><span class="stepnum">02</span><h3>We score</h3><p>Each pool gets a 0 to 100 risk score from audits, TVL, protocol age, liquidity and how much of the yield is real interest.</p></li>
       <li class="glass"><span class="stepnum">03</span><h3>You compare</h3><p>Sort, filter and project returns after fees, then deposit on the protocol itself. Tidewatch never touches your funds.</p></li>
     </ol>
@@ -138,7 +138,7 @@
     <div class="sectionhead"><div><p class="eyebrow">FAQ</p><h2 id="faqH">Questions, answered</h2></div><a class="btn ghost small" href="/learn">Read the yield guide →</a></div>
     <div class="faqlist glass">
       <details><summary>Is Tidewatch free?</summary><p>Yes. There is no sign-up, no wallet connection and no fee. You browse the data and deposit directly on the protocol you choose.</p></details>
-      <details><summary>Where does the data come from?</summary><p>Pools, APY and TVL come from DefiLlama Yields, which reads them on-chain. Audits and protocol age come from DefiLlama’s protocol list. We fetch the latest snapshot when you open the site and reuse it for up to 10 minutes while you browse.</p></details>
+      <details><summary>Where does the data come from?</summary><p>Pools, APY and TVL come from DefiLlama Yields, which reads them on-chain. Audits and protocol age come from DefiLlama’s protocol list. Our server picks up DefiLlama’s latest snapshot every 10 minutes, so what you see is never more than a few minutes behind their data.</p></details>
       <details><summary>Does Tidewatch ever hold my funds?</summary><p>No. Tidewatch is read-only. We never ask you to connect a wallet or sign anything.</p></details>
       <details><summary>What does “Low risk” actually mean?</summary><p>It means the pool scores at least 75 out of 100 and the protocol has a public audit. It lowers the odds of a bad outcome, it doesn’t remove them. <a href="/risk">See the full method</a>.</p></details>
       <details><summary>Why does the APY differ from what the protocol shows?</summary><p>APY moves constantly, and protocols value reward tokens in different ways. We show DefiLlama’s latest reading next to the 30-day average, which is a steadier guide.</p></details>

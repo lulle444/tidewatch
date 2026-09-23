@@ -3,6 +3,7 @@
 const CHAIN = "Robinhood Chain";
 const POOLS_URL = "https://yields.llama.fi/pools";
 const PROTOCOLS_URL = "https://api.llama.fi/protocols";
+const API_URL = "/api/pools";
 
 const STABLES = /^(USD|USDC|USDT|USDG|USDE|SUSDE|DAI|SDAI|USDS|SUSDS|PYUSD|FRAX|GHO|USD0|RLUSD|USDX|EURC|STEAKUSDG|STEAKUSDC)/;
 const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BRKB JPM V MA LLY UNH XOM WMT JNJ PG HD COST ORCL NFLX AMD CRM ADBE PEP KO " +
@@ -112,7 +113,7 @@ function readCache(){
   try { const c = JSON.parse(sessionStorage.getItem(CACHE_KEY)); if (c && Date.now() - c.t < CACHE_MS && c.pools.length) return c; } catch (e) {}
   return null;
 }
-function writeCache(pools){ try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({t: Date.now(), pools})); } catch (e) {} }
+function writeCache(pools, at){ try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({t: +at || Date.now(), pools})); } catch (e) {} }
 
 async function load(){
   const cached = readCache();
@@ -120,13 +121,21 @@ async function load(){
     let list, at;
     if (cached) { list = cached.pools; at = new Date(cached.t); }
     else {
-      const [pools, protocols] = await Promise.all([
-        fetchJson(POOLS_URL),
-        fetchJson(PROTOCOLS_URL).catch(() => [])
-      ]);
-      list = build(pools.data || [], protocols);
+      // Our own cached endpoint first (small and fast); DefiLlama directly if it isn't reachable.
+      const api = location.protocol.startsWith("http") ? await fetchJson(API_URL).catch(() => null) : null;
+      if (api && api.data && api.data.length) {
+        list = build(api.data, api.protocols || []);
+        at = new Date(api.updatedAt || Date.now());
+      } else {
+        const [pools, protocols] = await Promise.all([
+          fetchJson(POOLS_URL),
+          fetchJson(PROTOCOLS_URL).catch(() => [])
+        ]);
+        list = build(pools.data || [], protocols);
+        at = new Date();
+      }
       if (!list.length) throw new Error("no pools for chain");
-      at = new Date(); writeCache(list);
+      writeCache(list, at);
     }
     state.pools = list; state.sample = false;
     $("dot").className = "dot live";
