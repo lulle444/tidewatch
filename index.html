@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tidewatch</title>
+<meta name="description" content="Live yield-sammenligning for stock tokens og stablecoins på Robinhood Chain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+[hidden]{display:none!important}
+:root{
+  color-scheme: light;
+  --ground:#F2F5F6; --surface:#FFFFFF; --surface-2:#E8EEF0; --ink:#0F1D2B; --muted:#56687A; --line:#D3DDE2;
+  --accent:#0B7A72; --accent-soft:#D6EEEA; --accent-ink:#FFFFFF;
+  --low:#23804F; --low-soft:#DCF0E4; --mid:#A86B00; --mid-soft:#F6EACB; --high:#B83A26; --high-soft:#F6DDD7;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#0A131C; --surface:#101C28; --surface-2:#172636; --ink:#E4EDF1; --muted:#90A3B3; --line:#223445;
+    --accent:#47BFB1; --accent-soft:#12352F; --accent-ink:#06201C;
+    --low:#5CC98C; --low-soft:#143324; --mid:#E0A93A; --mid-soft:#3A2C0E; --high:#EE7A63; --high-soft:#3E1D17;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#0A131C; --surface:#101C28; --surface-2:#172636; --ink:#E4EDF1; --muted:#90A3B3; --line:#223445;
+  --accent:#47BFB1; --accent-soft:#12352F; --accent-ink:#06201C;
+  --low:#5CC98C; --low-soft:#143324; --mid:#E0A93A; --mid-soft:#3A2C0E; --high:#EE7A63; --high-soft:#3E1D17;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.55 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;margin-bottom:22px}
+.brand{display:flex;flex-direction:column;gap:4px}
+.brand .mark{font:700 13px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(28px,4.6vw,44px)/1.05 var(--display);margin:0;letter-spacing:-.015em;text-wrap:balance;max-width:22ch}
+.lede{margin:10px 0 0;color:var(--muted);max-width:62ch}
+.source{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.live{background:var(--low);box-shadow:0 0 0 4px var(--low-soft)}
+.dot.sample{background:var(--mid);box-shadow:0 0 0 4px var(--mid-soft)}
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--mid-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:18px}
+.banner b{color:var(--mid)}
+
+/* tide gauge stats */
+.gauge{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line);margin-bottom:28px}
+.gauge div{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.gauge div+div{border-left:1px solid var(--line)}
+.gauge small{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.gauge strong{font:500 22px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.gauge span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:760px){.gauge{grid-template-columns:repeat(2,minmax(0,1fr))}.gauge div:nth-child(3){border-left:0}.gauge div:nth-child(n+3){border-top:1px solid var(--line)}}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
+h2{font:700 22px/1.2 var(--display);margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 14px;font-size:14px;max-width:62ch}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13px/1 var(--body);padding:8px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.field{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+select,input[type=text],input[type=number],input[type=search]{font:14px var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+input[type=search]{min-width:0;width:180px}
+.controls .grow{flex:1}
+
+/* table */
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+th{font:600 12px/1.2 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;background:var(--surface-2)}
+th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+th.r,td.r{text-align:right}
+th.r button{justify-content:flex-end}
+tbody tr:hover{background:var(--surface-2)}
+.proto{display:flex;flex-direction:column;gap:1px;min-width:0}
+.proto a{font-weight:600;color:var(--ink);text-decoration:none}
+.proto a:hover{text-decoration:underline}
+.proto span{font-size:12px;color:var(--muted)}
+.assetcell{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.asset{font:500 14px var(--mono)}
+.tag{display:inline-block;font:500 11px/1 var(--body);letter-spacing:.04em;padding:3px 6px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.tag.stock{background:var(--accent-soft);color:var(--accent)}
+.apy{font:500 16px var(--mono);font-variant-numeric:tabular-nums}
+.apy-split{display:block;font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.delta.up{color:var(--low)} .delta.down{color:var(--high)}
+.risk{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--body);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.risk.low{background:var(--low-soft);color:var(--low)} .risk.mid{background:var(--mid-soft);color:var(--mid)} .risk.high{background:var(--high-soft);color:var(--high)}
+.risk .num{font-weight:500}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.more{margin-top:10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);gap:10px;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:600 14px var(--body);padding:9px 14px;border-radius:6px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+
+/* side panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+@media (max-width:980px){.side{position:static}}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 14px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);letter-spacing:.03em}
+.form label.full{grid-column:1/-1}
+.form input,.form select{width:100%}
+.results{display:flex;flex-direction:column}
+.res{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.res b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res .gain{font:500 16px var(--mono);text-align:right;color:var(--low)}
+.res small{color:var(--muted);font-size:12px}
+.res small.r{text-align:right;font-family:var(--mono)}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+
+/* stock yield */
+.stock{margin-top:40px}
+.stockgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.scard header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.scard header b{font:500 18px var(--mono)}
+.scard header span{font-size:12px;color:var(--muted);text-align:right}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:78px minmax(0,1fr) 62px;gap:8px;align-items:center;font-size:12.5px}
+.bar .track{height:10px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--muted);border-radius:3px}
+.bar.defi .fill{background:var(--accent)}
+.bar .v{text-align:right;font-family:var(--mono)}
+.scard p{margin:0;font-size:13px;color:var(--muted)}
+
+/* method */
+.method{margin-top:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+@media (max-width:780px){.method{grid-template-columns:minmax(0,1fr)}}
+.method dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.method dt{font-family:var(--mono);color:var(--accent);font-weight:500;white-space:nowrap}
+.method dd{margin:0;color:var(--muted)}
+.method p{font-size:14px;color:var(--muted);margin:0 0 10px;max-width:62ch}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="mark">Tidewatch · Robinhood Chain</span>
+      <h1>Hvor får dine stock tokens og stablecoins mest ud af det?</h1>
+      <p class="lede">Alle yield-pools på Robinhood Chain samlet ét sted, sorteret efter afkast og vægtet med en risikoscore, så de høje tal ikke står alene.</p>
+    </div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Henter data…</span></div>
+  </header>
+
+  <div class="banner" id="sampleBanner" hidden><b>Eksempeldata.</b><span>Live data kunne ikke hentes i denne visning, så tallene herunder er illustrative og ikke aktuelle. Åbn siden som almindelig webside for live tal fra DefiLlama.</span></div>
+
+  <section class="gauge" aria-label="Nøgletal">
+    <div><small>Pools</small><strong id="gPools">–</strong><span id="gPoolsSub">&nbsp;</span></div>
+    <div><small>TVL i pools</small><strong id="gTvl">–</strong><span id="gTvlSub">&nbsp;</span></div>
+    <div><small>Bedste stablecoin</small><strong id="gStable">–</strong><span id="gStableSub">&nbsp;</span></div>
+    <div><small>Bedste stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
+  </section>
+
+  <div class="layout">
+    <main>
+      <h2>Live yield-tabel</h2>
+      <p class="sub">Klik på en kolonne for at sortere. APY er det samlede afkast pr. år, fordelt på basis (renter og fees) og belønninger (tokens, der kan falde i værdi).</p>
+      <div class="controls">
+        <div class="chips" role="group" aria-label="Aktivtype">
+          <button class="chip" data-kind="all" aria-pressed="true">Alle</button>
+          <button class="chip" data-kind="stable" aria-pressed="false">Stablecoins</button>
+          <button class="chip" data-kind="stock" aria-pressed="false">Stock tokens</button>
+          <button class="chip" data-kind="crypto" aria-pressed="false">Krypto</button>
+        </div>
+        <label class="field" for="minTvl">Min. TVL
+          <select id="minTvl">
+            <option value="0">Alle</option>
+            <option value="100000" selected>$100k</option>
+            <option value="1000000">$1M</option>
+            <option value="10000000">$10M</option>
+          </select>
+        </label>
+        <label class="field" for="maxRisk">Risiko
+          <select id="maxRisk">
+            <option value="high" selected>Alle</option>
+            <option value="mid">Lav + middel</option>
+            <option value="low">Kun lav</option>
+          </select>
+        </label>
+        <span class="grow"></span>
+        <input type="search" id="q" placeholder="Søg aktiv eller protokol" aria-label="Søg aktiv eller protokol">
+      </div>
+      <div class="tablebox">
+        <table>
+          <thead><tr>
+            <th><button data-sort="name">Protokol</button></th>
+            <th><button data-sort="symbol">Aktiv</button></th>
+            <th class="r"><button data-sort="apy">APY</button></th>
+            <th class="r"><button data-sort="apyMean30d">30d gns.</button></th>
+            <th class="r"><button data-sort="tvlUsd">TVL</button></th>
+            <th><button data-sort="score">Risiko</button></th>
+          </tr></thead>
+          <tbody id="rows"><tr><td colspan="6" class="empty">Henter pools…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="more"><span id="count"></span><button class="btn ghost" id="showMore" hidden>Vis flere</button></div>
+    </main>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="calcH">
+        <h2 id="calcH">Beregner</h2>
+        <p class="sub" style="margin:0">Forventet afkast efter gebyrer, hvis APY holder sig på sit 30-dages gennemsnit.</p>
+        <form class="form" id="calc">
+          <label for="cAmount">Beløb (USD)<input id="cAmount" type="number" min="0" step="100" value="10000" inputmode="decimal"></label>
+          <label for="cMonths">Måneder<input id="cMonths" type="number" min="1" max="60" step="1" value="3" inputmode="numeric"></label>
+          <label for="cKind">Aktiv
+            <select id="cKind"><option value="stable">Stablecoins</option><option value="stock">Stock tokens</option><option value="crypto">Krypto</option></select>
+          </label>
+          <label for="cRisk">Maks. risiko
+            <select id="cRisk"><option value="low">Lav</option><option value="mid" selected>Middel</option><option value="high">Alle</option></select>
+          </label>
+          <label class="full" for="cFee">Gebyrer i alt (gas ind/ud, swap, USD)<input id="cFee" type="number" min="0" step="0.5" value="2" inputmode="decimal"></label>
+        </form>
+        <div class="results" id="calcOut"></div>
+        <p class="note">Kun pools med mindst $1M TVL. Belønninger er regnet med til dagens værdi og kan svinge.</p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="stock" aria-labelledby="stockH">
+    <h2 id="stockH">Aktie-yield: token i DeFi mod aktie hos brokeren</h2>
+    <p class="sub">En stock token følger den underliggende aktie, og udbytte tilfalder begge. Forskellen er, hvad du kan tjene oven i ved at låne tokenet ud eller stille det som likviditet.</p>
+    <div class="stockgrid" id="stockGrid"></div>
+  </section>
+
+  <section class="method" aria-labelledby="methodH">
+    <div>
+      <h2 id="methodH">Sådan regnes risikoscoren</h2>
+      <p>Scoren går fra 0 til 100, hvor højere er tryggere. Lav risiko kræver mindst 75 point og en audit, middel kræver 50. Scoren er en tommelfingerregel, ikke en garanti, og en revideret protokol kan stadig blive hacket.</p>
+      <dl>
+        <dt>25 point</dt><dd>Audit: mindst én offentlig audit-rapport registreret hos DefiLlama.</dd>
+        <dt>25 point</dt><dd>TVL i poolen på logaritmisk skala, fuldt ved $100M.</dd>
+        <dt>20 point</dt><dd>Protokollens alder, fuldt ved to år.</dd>
+        <dt>15 point</dt><dd>Likviditet: ét enkelt aktiv uden impermanent loss giver fuldt, likviditetspools med IL giver 0.</dd>
+        <dt>15 point</dt><dd>Hvor meget af APY'en der er rigtige renter frem for belønningstokens.</dd>
+      </dl>
+    </div>
+    <div>
+      <h2>Rangering og betaling</h2>
+      <p>Rækkefølgen i tabellen bestemmes kun af den kolonne, du sorterer efter. Hvis en protokol en dag betaler for synlighed, vises det i en separat og tydeligt markeret boks, aldrig inde i tabellen.</p>
+      <p>Data: <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, som læser pools direkte on-chain. Tidewatch henter på ny hver gang siden åbnes.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Tidewatch er ikke finansiel rådgivning. Afkast er variable og kan blive negative.</span>
+    <span id="updated"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const CHAIN = "Robinhood Chain";
+const POOLS_URL = "https://yields.llama.fi/pools";
+const PROTOCOLS_URL = "https://api.llama.fi/protocols";
+
+const STABLES = /^(USD|USDC|USDT|USDG|USDE|SUSDE|DAI|SDAI|USDS|SUSDS|PYUSD|FRAX|GHO|USD0|RLUSD|USDX|EURC|STEAKUSDG|STEAKUSDC)/;
+const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BRKB JPM V MA LLY UNH XOM WMT JNJ PG HD COST ORCL NFLX AMD CRM ADBE PEP KO " +
+  "MCD INTC CSCO QCOM TXN IBM BA DIS NKE PYPL SQ XYZ SHOP UBER ABNB COIN MSTR PLTR SNOW HOOD RIVN LCID GME AMC SOFI RBLX SPOT BABA NIO " +
+  "ARM SMCI MU ASML TSM CRWD PANW NET DDOG ZM SNAP PINS DKNG CVX GS MS BAC WFC C SCHW BLK SPY QQQ VOO VTI IWM DIA GLD SLV TLT ARKK").split(" "));
+
+const state = {pools:[], kind:"all", minTvl:100000, maxRisk:"high", q:"", sort:"apy", dir:-1, limit:25, sample:false};
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtUsd = v => {
+  if (v == null || !isFinite(v)) return "–";
+  const a = Math.abs(v);
+  if (a >= 1e9) return "$" + (v/1e9).toFixed(2) + "B";
+  if (a >= 1e6) return "$" + (v/1e6).toFixed(a >= 1e8 ? 0 : 1) + "M";
+  if (a >= 1e3) return "$" + (v/1e3).toFixed(a >= 1e5 ? 0 : 1) + "k";
+  return "$" + v.toFixed(0);
+};
+const fmtPct = v => (v == null || !isFinite(v)) ? "–" : (v >= 100 ? v.toFixed(0) : v.toFixed(2)) + " %";
+const fmtKr = v => "$" + v.toLocaleString("da-DK", {maximumFractionDigits:0});
+const titleCase = slug => slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+function classify(sym, stableFlag){
+  const parts = String(sym).toUpperCase().split(/[-\/ ]+/).filter(Boolean);
+  const isStock = parts.some(p => TICKERS.has(p) || TICKERS.has(p.replace(/X$|ON$|\.RH$/, "")));
+  if (isStock) return "stock";
+  if (stableFlag || parts.every(p => STABLES.test(p))) return "stable";
+  return "crypto";
+}
+
+function score(p, meta){
+  const audited = meta && ((meta.audit_links && meta.audit_links.length) || meta.audits === "2" || meta.audits === "1") ? 1 : 0;
+  const tvl = Math.max(0, Math.min(1, (Math.log10(Math.max(p.tvlUsd, 1)) - 5) / 3));        // $100k → 0, $100M → 1
+  const ageDays = meta && meta.listedAt ? (Date.now()/1000 - meta.listedAt) / 86400 : 0;
+  const age = Math.max(0, Math.min(1, ageDays / 730));
+  const liq = p.ilRisk === "yes" ? 0 : (p.exposure === "multi" ? 0.6 : 1);
+  const total = (p.apyBase || 0) + (p.apyReward || 0);
+  const organic = total > 0 ? Math.max(0, Math.min(1, (p.apyBase || 0) / total)) : 1;
+  let s = 25*audited + 25*tvl + 20*age + 15*liq + 15*organic;
+  if (p.outlier) s -= 15;
+  s = Math.round(Math.max(0, Math.min(100, s)));
+  return {s, band: (s >= 75 && audited) ? "low" : s >= 50 ? "mid" : "high", audited, ageDays};
+}
+const BAND_LABEL = {low:"Lav", mid:"Middel", high:"Høj"};
+const BAND_RANK = {low:0, mid:1, high:2};
+
+/* ---------- data ---------- */
+async function fetchJson(url){
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 25000);
+  try { const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+
+function build(poolsRaw, protocolsRaw){
+  const meta = new Map();
+  (protocolsRaw || []).forEach(p => { if (p && p.slug) meta.set(p.slug, p); });
+  return poolsRaw.filter(p => p.chain === CHAIN && p.tvlUsd > 0).map(p => {
+    const m = meta.get(p.project);
+    const sc = score(p, m);
+    const apy = p.apy ?? ((p.apyBase || 0) + (p.apyReward || 0));
+    return {
+      id: p.pool, project: p.project, name: m ? m.name : titleCase(p.project),
+      url: m && m.url ? m.url : "https://defillama.com/yields/pool/" + p.pool,
+      category: m ? m.category : "", symbol: p.symbol, meta: p.poolMeta,
+      kind: classify(p.symbol, p.stablecoin), tvlUsd: p.tvlUsd, apy,
+      apyBase: p.apyBase, apyReward: p.apyReward, apyMean30d: p.apyMean30d ?? apy,
+      d7: p.apyPct7D, ilRisk: p.ilRisk, exposure: p.exposure,
+      score: sc.s, band: sc.band, audited: sc.audited, ageDays: sc.ageDays
+    };
+  });
+}
+
+/* Clearly-labelled fallback, shown only when live fetch fails. Illustrative values, not current. */
+const SAMPLE_PROTOCOLS = [
+  {slug:"morpho-blue",name:"Morpho Blue",category:"Lending",url:"https://morpho.org",audit_links:["x"],listedAt:1704067200},
+  {slug:"spark",name:"Spark",category:"Lending",url:"https://spark.fi",audit_links:["x"],listedAt:1683000000},
+  {slug:"uniswap-v3",name:"Uniswap V3",category:"Dexs",url:"https://uniswap.org",audit_links:["x"],listedAt:1620000000},
+  {slug:"lighter",name:"Lighter",category:"Derivatives",url:"https://lighter.xyz",audit_links:["x"],listedAt:1735000000},
+  {slug:"longbow",name:"Longbow",category:"Lending",url:"https://defillama.com",audit_links:[],listedAt:1752000000},
+  {slug:"beefy",name:"Beefy",category:"Yield Aggregator",url:"https://beefy.com",audit_links:["x"],listedAt:1600000000},
+  {slug:"ramsesx",name:"RamsesX",category:"Dexs",url:"https://defillama.com",audit_links:[],listedAt:1753000000}
+];
+const SAMPLE_POOLS = [
+  ["morpho-blue","STEAKUSDG",497e6,4.0,3.07,6.9,true,"no","single"],
+  ["morpho-blue","USDE",342e6,0,4.75,4.6,true,"no","single"],
+  ["spark","USDC",14e6,4.6,0,4.5,true,"no","single"],
+  ["lighter","USDC",99e6,11.2,0,13.4,true,"no","single","LLP vault"],
+  ["morpho-blue","TSLA",18e6,2.1,0,1.9,false,"no","single"],
+  ["morpho-blue","NVDA",22e6,1.6,0,1.7,false,"no","single"],
+  ["morpho-blue","AAPL",9e6,0.9,0,1.0,false,"no","single"],
+  ["uniswap-v3","TSLA-USDG",6.2e6,14.8,0,11.9,false,"yes","multi","0.3%"],
+  ["uniswap-v3","NVDA-USDG",4.8e6,12.1,0,10.6,false,"yes","multi","0.3%"],
+  ["uniswap-v3","WETH-USDG",31e6,18.4,0,16.2,false,"yes","multi","0.05%"],
+  ["longbow","USDG",2.4e6,9.5,6.0,17.0,true,"no","single"],
+  ["beefy","TSLA-USDG",1.1e6,19.3,0,17.5,false,"yes","multi"],
+  ["ramsesx","HOOD-WETH",0.8e6,24.0,41.0,58.0,false,"yes","multi"],
+  ["morpho-blue","WETH",26e6,2.2,0,2.1,false,"no","single"],
+  ["spark","WETH",5e6,1.8,0.4,2.2,false,"no","single"]
+].map((r,i) => ({chain:CHAIN,project:r[0],symbol:r[1],tvlUsd:r[2],apyBase:r[3],apyReward:r[4],apy:r[3]+r[4],apyMean30d:r[5],
+  stablecoin:r[6],ilRisk:r[7],exposure:r[8],poolMeta:r[9]||null,pool:"sample-"+i,apyPct7D:null}));
+
+async function load(){
+  try {
+    const [pools, protocols] = await Promise.all([
+      fetchJson(POOLS_URL),
+      fetchJson(PROTOCOLS_URL).catch(() => [])
+    ]);
+    const list = build(pools.data || [], protocols);
+    if (!list.length) throw new Error("no pools for chain");
+    state.pools = list; state.sample = false;
+    $("dot").className = "dot live";
+    $("sourceText").textContent = "Live fra DefiLlama · " + new Date().toLocaleTimeString("da-DK", {hour:"2-digit", minute:"2-digit"});
+  } catch (e) {
+    state.pools = build(SAMPLE_POOLS, SAMPLE_PROTOCOLS); state.sample = true;
+    $("sampleBanner").hidden = false;
+    $("dot").className = "dot sample";
+    $("sourceText").textContent = "Eksempeldata";
+  }
+  $("updated").textContent = "Indlæst " + new Date().toLocaleString("da-DK", {dateStyle:"medium", timeStyle:"short"});
+  renderAll();
+}
+
+/* ---------- render ---------- */
+function filtered(){
+  const q = state.q.trim().toLowerCase();
+  return state.pools.filter(p =>
+    (state.kind === "all" || p.kind === state.kind) &&
+    p.tvlUsd >= state.minTvl &&
+    BAND_RANK[p.band] <= BAND_RANK[state.maxRisk] &&
+    (!q || p.symbol.toLowerCase().includes(q) || p.name.toLowerCase().includes(q))
+  ).sort((a,b) => {
+    const k = state.sort, av = a[k], bv = b[k];
+    if (typeof av === "string") return state.dir * av.localeCompare(bv);
+    return state.dir * ((av ?? -Infinity) - (bv ?? -Infinity));
+  });
+}
+
+function renderTable(){
+  const rows = filtered();
+  const shown = rows.slice(0, state.limit);
+  $("rows").innerHTML = shown.length ? shown.map(p => {
+    const split = (p.apyReward > 0) ? `<span class="apy-split">${fmtPct(p.apyBase || 0)} + ${fmtPct(p.apyReward)} bel.</span>` : "";
+    const d = p.d7;
+    const delta = (d != null && isFinite(d) && Math.abs(d) >= 0.01) ? `<span class="apy-split delta ${d>0?"up":"down"}">${d>0?"+":""}${d.toFixed(2)} pp 7d</span>` : "";
+    const tag = p.kind === "stock" ? '<span class="tag stock">Aktie</span>' : p.kind === "stable" ? '<span class="tag">Stable</span>' : "";
+    const why = `Audit: ${p.audited ? "ja" : "nej"} · Alder: ${p.ageDays ? Math.round(p.ageDays) + " dage" : "ukendt"} · IL: ${p.ilRisk === "yes" ? "ja" : "nej"}`;
+    return `<tr>
+      <td><div class="proto"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a><span>${esc(p.category || "")}${p.meta ? " · " + esc(p.meta) : ""}</span></div></td>
+      <td><div class="assetcell"><span class="asset">${esc(p.symbol)}</span>${tag}</div></td>
+      <td class="r"><span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
+      <td class="r num">${fmtPct(p.apyMean30d)}</td>
+      <td class="r num">${fmtUsd(p.tvlUsd)}</td>
+      <td><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="6" class="empty">Ingen pools matcher filtrene. Prøv en lavere min. TVL eller flere risikoniveauer.</td></tr>`;
+  $("count").textContent = `Viser ${shown.length} af ${rows.length} pools`;
+  $("showMore").hidden = rows.length <= state.limit;
+  document.querySelectorAll("th button").forEach(b => {
+    const on = b.dataset.sort === state.sort;
+    b.closest("th").setAttribute("aria-sort", on ? (state.dir < 0 ? "descending" : "ascending") : "none");
+    b.textContent = b.textContent.replace(/ [↓↑]$/, "") + (on ? (state.dir < 0 ? " ↓" : " ↑") : "");
+  });
+}
+
+function best(kind, minTvl){
+  return state.pools.filter(p => p.kind === kind && p.tvlUsd >= minTvl && p.band !== "high").sort((a,b) => b.apyMean30d - a.apyMean30d)[0];
+}
+
+function renderGauge(){
+  const tvl = state.pools.reduce((s,p) => s + p.tvlUsd, 0);
+  $("gPools").textContent = state.pools.length;
+  $("gPoolsSub").textContent = new Set(state.pools.map(p => p.project)).size + " protokoller";
+  $("gTvl").textContent = fmtUsd(tvl);
+  $("gTvlSub").textContent = state.pools.filter(p => p.kind === "stock").length + " pools med stock tokens";
+  const s = best("stable", 1e6), k = best("stock", 1e6);
+  $("gStable").textContent = s ? fmtPct(s.apyMean30d) : "–";
+  $("gStableSub").textContent = s ? `${s.symbol} på ${s.name}` : "Ingen over $1M TVL";
+  $("gStock").textContent = k ? fmtPct(k.apyMean30d) : "–";
+  $("gStockSub").textContent = k ? `${k.symbol} på ${k.name}` : "Ingen over $1M TVL";
+}
+
+function renderCalc(){
+  const amt = Math.max(0, +$("cAmount").value || 0);
+  const months = Math.max(1, Math.min(60, +$("cMonths").value || 1));
+  const fee = Math.max(0, +$("cFee").value || 0);
+  const kind = $("cKind").value, maxR = $("cRisk").value;
+  const opts = state.pools.filter(p => p.kind === kind && p.tvlUsd >= 1e6 && BAND_RANK[p.band] <= BAND_RANK[maxR])
+    .map(p => { const g = amt * (Math.pow(1 + (p.apyMean30d || 0)/100, months/12) - 1) - fee; return {p, g}; })
+    .sort((a,b) => b.g - a.g).slice(0, 5);
+  $("calcOut").innerHTML = opts.length ? opts.map(({p,g}) => `
+    <div class="res">
+      <b>${esc(p.symbol)} · ${esc(p.name)}</b><span class="gain">${g >= 0 ? "+" : "−"}${fmtKr(Math.abs(g))}</span>
+      <small><span class="risk ${p.band}" style="padding:2px 6px">${BAND_LABEL[p.band]}</span> · ${fmtUsd(p.tvlUsd)} TVL</small><small class="r">${fmtPct(p.apyMean30d)}</small>
+    </div>`).join("")
+    : `<p class="note">Ingen pools over $1M TVL med den risiko. Vælg "Alle" under maks. risiko.</p>`;
+}
+
+function renderStock(){
+  const stock = state.pools.filter(p => p.kind === "stock" && p.tvlUsd >= 1e5);
+  const byTicker = new Map();
+  stock.forEach(p => {
+    const t = p.symbol.toUpperCase().split(/[-\/ ]+/).find(x => TICKERS.has(x) || TICKERS.has(x.replace(/X$|ON$|\.RH$/, ""))) || p.symbol;
+    const cur = byTicker.get(t);
+    if (!cur || p.apyMean30d > cur.apyMean30d) byTicker.set(t, {...p, ticker:t, n:(cur ? cur.n : 0) + 1});
+    else cur.n++;
+  });
+  const cards = [...byTicker.values()].sort((a,b) => b.tvlUsd - a.tvlUsd).slice(0, 6);
+  if (!cards.length){ $("stockGrid").innerHTML = `<p class="sub">Ingen stock token-pools med over $100k TVL lige nu.</p>`; return; }
+  const max = Math.max(...cards.map(c => c.apyMean30d), 1);
+  $("stockGrid").innerHTML = cards.map(c => {
+    const on10k = 10000 * (c.apyMean30d/100);
+    return `<article class="scard">
+      <header><b>${esc(c.ticker)}</b><span>${c.n} pool${c.n > 1 ? "s" : ""} · bedst på ${esc(c.name)}</span></header>
+      <div class="bars">
+        <div class="bar"><span>Hos broker</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="v">0,00 %</span></div>
+        <div class="bar defi"><span>I DeFi</span><span class="track"><span class="fill" style="width:${(c.apyMean30d/max*100).toFixed(1)}%"></span></span><span class="v">${fmtPct(c.apyMean30d)}</span></div>
+      </div>
+      <p>Ekstra ca. ${fmtKr(on10k)} om året på $10.000 i ${esc(c.ticker)}${c.ilRisk === "yes" ? ", men som likviditet risikerer du impermanent loss, hvis kursen flytter sig meget" : ", ved udlån uden impermanent loss"}.</p>
+    </article>`;
+  }).join("");
+}
+
+function renderAll(){ renderGauge(); renderTable(); renderCalc(); renderStock(); }
+
+/* ---------- events ---------- */
+document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+  state.kind = b.dataset.kind; state.limit = 25;
+  document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  renderTable();
+}));
+$("minTvl").addEventListener("change", e => { state.minTvl = +e.target.value; state.limit = 25; renderTable(); });
+$("maxRisk").addEventListener("change", e => { state.maxRisk = e.target.value; state.limit = 25; renderTable(); });
+$("q").addEventListener("input", e => { state.q = e.target.value; renderTable(); });
+$("showMore").addEventListener("click", () => { state.limit += 25; renderTable(); });
+document.querySelectorAll("th button").forEach(b => b.addEventListener("click", () => {
+  const k = b.dataset.sort;
+  if (state.sort === k) state.dir = -state.dir; else { state.sort = k; state.dir = (k === "name" || k === "symbol") ? 1 : -1; }
+  renderTable();
+}));
+$("calc").addEventListener("input", renderCalc);
+$("calc").addEventListener("submit", e => e.preventDefault());
+
+load();
+})();
+</script>
+
+</body>
+</html>
