@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculator · Tidewatch</title>
+<meta name="description" content="Project your return after fees across Robinhood Chain yield pools.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/calculator">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Calculator · Tidewatch">
+<meta property="og:description" content="Project your return after fees across Robinhood Chain yield pools.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/calculator">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#EDF3F8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<canvas id="tide" aria-hidden="true"></canvas>
+<div class="wrap">
+  <nav class="nav glass" aria-label="Main">
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
+    <div class="navlinks">
+      <a href="/yields">Yields</a>
+      <a href="/calculator" aria-current="page">Calculator</a>
+      <a href="/stock-yield">Stock yield</a>
+      <a href="/risk">Risk score</a>
+    </div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
+  </nav>
+  <div class="mobilenav" aria-label="Sections">
+    <a href="/yields">Yields</a>
+    <a href="/calculator" aria-current="page">Calculator</a>
+    <a href="/stock-yield">Stock yield</a>
+    <a href="/risk">Risk score</a>
+  </div>
+
+  <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
+
+  <header class="pagehead">
+    <p class="eyebrow">Calculator</p>
+    <h1>Project your return</h1>
+    <p class="lede">Pick an amount, a period and how much risk you accept. We show the five best options after fees, assuming each pool’s APY holds at its 30-day average.</p>
+  </header>
+
+  <div class="twocol">
+    <section class="panel glass" aria-labelledby="calcH">
+      <h2 id="calcH" class="visually-hidden">Calculator</h2>
+      <form class="form" id="calc">
+        <label for="cAmount">Amount (USD)<input id="cAmount" type="number" min="0" step="100" value="10000" inputmode="decimal"></label>
+        <label for="cMonths">Months<input id="cMonths" type="number" min="1" max="60" step="1" value="3" inputmode="numeric"></label>
+        <label for="cKind">Asset
+          <select id="cKind"><option value="stable">Stablecoins</option><option value="stock">Stock tokens</option><option value="crypto">Crypto</option></select>
+        </label>
+        <label for="cRisk">Max risk
+          <select id="cRisk"><option value="low">Low</option><option value="mid" selected>Medium</option><option value="high">All</option></select>
+        </label>
+        <label class="full" for="cFee">Total fees (gas in/out, swaps, USD)<input id="cFee" type="number" min="0" step="0.5" value="2" inputmode="decimal"></label>
+      </form>
+      <div class="results" id="calcOut"></div>
+      <p class="note">Only pools with at least $1M TVL. Rewards are counted at today’s value and can fluctuate.</p>
+    </section>
+    <aside class="explain">
+      <div class="pic"><img src="/assets/brand/wave-bars.webp" alt="A breaking wave with rising bars" width="499" height="322" loading="lazy"></div>
+      <div class="glass note-card">
+        <p class="eyebrow">How it’s calculated</p>
+        <p>Return = amount × ((1 + 30-day average APY)<sup>months/12</sup> − 1) − fees. Using the 30-day average instead of today’s APY smooths out short spikes that rarely last.</p>
+        <p>Yields change constantly, so treat the result as an estimate, not a promise.</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
+    <nav class="footlinks" aria-label="Footer">
+      <a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/risk">Risk score</a>
+    </nav>
+    <span>Not financial advice. Yields are variable and can turn negative.</span>
+    <span id="updated"></span>
+  </footer>
+</div>
+<script src="/app.js"></script>
+<script src="/tide.js"></script>
+</body>
+</html>

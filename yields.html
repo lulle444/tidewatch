@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tidewatch</title>
-<meta name="description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
-<link rel="canonical" href="https://tidewatch-olive.vercel.app">
+<title>Yields · Tidewatch</title>
+<meta name="description" content="Every yield pool on Robinhood Chain, sortable by APY, TVL and risk.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/yields">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta property="og:title" content="Tidewatch">
-<meta property="og:description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
-<meta property="og:url" content="https://tidewatch-olive.vercel.app">
+<meta property="og:title" content="Yields · Tidewatch">
+<meta property="og:description" content="Every yield pool on Robinhood Chain, sortable by APY, TVL and risk.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/yields">
 <meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#EDF3F8">
@@ -19,13 +19,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/styles.css">
 </head>
-<body data-limit="5" data-max-risk="mid" data-min-tvl="1000000">
+<body>
 <canvas id="tide" aria-hidden="true"></canvas>
 <div class="wrap">
   <nav class="nav glass" aria-label="Main">
     <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
     <div class="navlinks">
-      <a href="/yields">Yields</a>
+      <a href="/yields" aria-current="page">Yields</a>
       <a href="/calculator">Calculator</a>
       <a href="/stock-yield">Stock yield</a>
       <a href="/risk">Risk score</a>
@@ -33,7 +33,7 @@
     <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
   </nav>
   <div class="mobilenav" aria-label="Sections">
-    <a href="/yields">Yields</a>
+    <a href="/yields" aria-current="page">Yields</a>
     <a href="/calculator">Calculator</a>
     <a href="/stock-yield">Stock yield</a>
     <a href="/risk">Risk score</a>
@@ -41,25 +41,10 @@
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <header class="hero" id="top">
-    <div>
-      <p class="eyebrow">Robinhood Chain · All yields in one place</p>
-      <h1>Ride the <em>yield</em>, not the hype.</h1>
-      <p class="lede">Every yield pool for stock tokens and stablecoins on Robinhood Chain, ranked by return and weighed by a transparent risk score.</p>
-      <div class="ctas">
-        <a class="btn primary" href="/yields">Explore live yields</a>
-        <a class="btn ghost" href="/risk">How we score risk</a>
-      </div>
-      <p class="trust">Live on-chain data via DefiLlama · No sign-up · Independent ranking</p>
-    </div>
-    <div class="visual">
-      <figure><img src="/assets/brand/hero-logo.webp" alt="The Tidewatch wave emblem resting on calm water" width="501" height="355" fetchpriority="high"></figure>
-      <div class="float glass" aria-live="polite">
-        <small>Best stablecoin now</small>
-        <strong id="hStable">–</strong>
-        <span id="hStableSub">&nbsp;</span>
-      </div>
-    </div>
+  <header class="pagehead">
+    <p class="eyebrow">Live yield table</p>
+    <h1>Where your capital earns the most</h1>
+    <p class="lede">Every pool on Robinhood Chain. Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value).</p>
   </header>
 
   <section class="gauge glass" aria-label="Key figures">
@@ -69,26 +54,32 @@
     <div><small>Best stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
   </section>
 
-  <section class="features" aria-label="Explore Tidewatch">
-    <a class="feature glass" href="/yields">
-      <img src="/assets/brand/globe.webp" alt="" width="499" height="314" loading="lazy">
-      <div><p class="eyebrow">All yields in one place</p><h3>Every pool on the chain</h3><p>Lending, liquidity and vaults across Robinhood Chain, refreshed every time you open the page.</p><span class="more-link">Open the yield table →</span></div>
-    </a>
-    <a class="feature glass" href="/risk">
-      <img src="/assets/brand/shield.webp" alt="" width="499" height="314" loading="lazy">
-      <div><p class="eyebrow">Data-driven decisions</p><h3>Risk-scored, not just ranked</h3><p>Audits, TVL, protocol age and liquidity combine into one score, so a big APY never stands alone.</p><span class="more-link">See how we score →</span></div>
-    </a>
-    <a class="feature glass" href="/stock-yield">
-      <img src="/assets/brand/compare-track.webp" alt="" width="501" height="322" loading="lazy">
-      <div><p class="eyebrow">Compare · Track · Earn</p><h3>Stock tokens that work for you</h3><p>See what tokenized shares earn in DeFi compared with just holding them at a broker.</p><span class="more-link">Compare stock yield →</span></div>
-    </a>
-  </section>
-
-  <section class="tablepanel glass" aria-labelledby="topH">
-    <div class="sectionhead">
-      <div><p class="eyebrow">Right now</p><h2 id="topH">Top yields, low to medium risk</h2></div>
-      <a class="btn ghost small" href="/yields">See all yields →</a>
-    </div>
+  <main class="tablepanel glass">
+      <div class="controls">
+        <div class="chips" role="group" aria-label="Asset type">
+          <button class="chip" data-kind="all" aria-pressed="true">All</button>
+          <button class="chip" data-kind="stable" aria-pressed="false">Stablecoins</button>
+          <button class="chip" data-kind="stock" aria-pressed="false">Stock tokens</button>
+          <button class="chip" data-kind="crypto" aria-pressed="false">Crypto</button>
+        </div>
+        <label class="field" for="minTvl">Min. TVL
+          <select id="minTvl">
+            <option value="0">All</option>
+            <option value="100000" selected>$100k</option>
+            <option value="1000000">$1M</option>
+            <option value="10000000">$10M</option>
+          </select>
+        </label>
+        <label class="field" for="maxRisk">Risk
+          <select id="maxRisk">
+            <option value="high" selected>All</option>
+            <option value="mid">Low + medium</option>
+            <option value="low">Low only</option>
+          </select>
+        </label>
+        <span class="grow"></span>
+        <input type="search" id="q" placeholder="Search asset or protocol" aria-label="Search asset or protocol">
+      </div>
       <div class="tablebox">
         <table>
           <thead><tr>
@@ -102,6 +93,12 @@
           <tbody id="rows"><tr><td colspan="6" class="empty">Loading pools…</td></tr></tbody>
         </table>
       </div>
+      <div class="more"><span id="count"></span><button class="btn ghost small" id="showMore" hidden>Show more</button></div>
+  </main>
+
+  <section class="nextsteps" aria-label="Next steps">
+    <a class="glass" href="/calculator"><p class="eyebrow">Calculator</p><h3>Project your return →</h3><p>See what an amount could earn over a few months, after fees.</p></a>
+    <a class="glass" href="/risk"><p class="eyebrow">Risk score</p><h3>Understand the score →</h3><p>What goes into Low, Medium and High, and what it can’t tell you.</p></a>
   </section>
 
   <footer>

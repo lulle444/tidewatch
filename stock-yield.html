@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stock yield · Tidewatch</title>
+<meta name="description" content="What tokenized stocks earn in DeFi on Robinhood Chain compared with holding them at a broker.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/stock-yield">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Stock yield · Tidewatch">
+<meta property="og:description" content="What tokenized stocks earn in DeFi on Robinhood Chain compared with holding them at a broker.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/stock-yield">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#EDF3F8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<canvas id="tide" aria-hidden="true"></canvas>
+<div class="wrap">
+  <nav class="nav glass" aria-label="Main">
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
+    <div class="navlinks">
+      <a href="/yields">Yields</a>
+      <a href="/calculator">Calculator</a>
+      <a href="/stock-yield" aria-current="page">Stock yield</a>
+      <a href="/risk">Risk score</a>
+    </div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
+  </nav>
+  <div class="mobilenav" aria-label="Sections">
+    <a href="/yields">Yields</a>
+    <a href="/calculator">Calculator</a>
+    <a href="/stock-yield" aria-current="page">Stock yield</a>
+    <a href="/risk">Risk score</a>
+  </div>
+
+  <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
+
+  <header class="pagehead">
+    <p class="eyebrow">Stock yield</p>
+    <h1>Your shares, working harder</h1>
+    <p class="lede">A stock token tracks the underlying share, and dividends go to both. The difference is what you can earn on top by lending the token out or providing liquidity.</p>
+  </header>
+
+  <section aria-label="Stock tokens" class="stockwrap">
+    <div class="stockgrid" id="stockGrid"></div>
+  </section>
+
+  <div class="twocol">
+    <div class="glass note-card">
+      <p class="eyebrow">How stock tokens work</p>
+      <h3>One token, one share</h3>
+      <p>On Robinhood Chain, stock tokens are standard ERC-20 tokens. Each started as one underlying share, and a built-in multiplier adjusts for dividends and splits without changing your balance.</p>
+      <p>Prices come from a Chainlink feed per stock, so lending markets can value them 24/7.</p>
+    </div>
+    <div class="glass note-card">
+      <p class="eyebrow">What to watch</p>
+      <h3>Lending vs. liquidity</h3>
+      <p>Lending a stock token keeps your exposure simple: you earn interest and keep the share. Providing liquidity usually pays more, but you risk impermanent loss if the share price moves a lot.</p>
+      <p><a href="/risk">See how we score that risk →</a></p>
+    </div>
+  </div>
+
+  <footer>
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
+    <nav class="footlinks" aria-label="Footer">
+      <a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/risk">Risk score</a>
+    </nav>
+    <span>Not financial advice. Yields are variable and can turn negative.</span>
+    <span id="updated"></span>
+  </footer>
+</div>
+<script src="/app.js"></script>
+<script src="/tide.js"></script>
+</body>
+</html>
