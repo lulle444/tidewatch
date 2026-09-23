@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Tidewatch","url":"https://tidewatch-olive.vercel.app/","logo":"https://tidewatch-olive.vercel.app/assets/logo-mark.png","sameAs":["https://x.com/usetidewatch"]},{"@type":"WebSite","name":"Tidewatch","url":"https://tidewatch-olive.vercel.app/"}]}</script>
 </head>
 <body data-limit="5" data-max-risk="mid" data-min-tvl="1000000">
 <canvas id="tide" aria-hidden="true"></canvas>
@@ -32,6 +33,7 @@
       <a href="/calculator">Calculator</a>
       <a href="/stock-yield">Stock yield</a>
       <a href="/risk">Risk score</a>
+      <a href="/learn">Learn</a>
     </div>
     <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
   </nav>
@@ -40,6 +42,7 @@
     <a href="/calculator">Calculator</a>
     <a href="/stock-yield">Stock yield</a>
     <a href="/risk">Risk score</a>
+    <a href="/learn">Learn</a>
   </div>
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
@@ -107,13 +110,69 @@
       </div>
   </section>
 
-  <footer>
-    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
-    <nav class="footlinks" aria-label="Footer">
-      <a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/risk">Risk score</a><a class="social" href="https://x.com/usetidewatch" target="_blank" rel="noopener me" aria-label="Tidewatch on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@usetidewatch</a>
-    </nav>
-    <span>Not financial advice. Yields are variable and can turn negative.</span>
-    <span id="updated"></span>
+  <section class="block" aria-labelledby="howH">
+    <div class="sectionhead"><div><p class="eyebrow">How it works</p><h2 id="howH">From raw on-chain data to a clear choice</h2></div></div>
+    <ol class="steps">
+      <li class="glass"><span class="stepnum">01</span><h3>We collect</h3><p>Every Robinhood Chain pool listed on DefiLlama, which reads APY and TVL straight from the contracts. Fetched fresh when you open the site.</p></li>
+      <li class="glass"><span class="stepnum">02</span><h3>We score</h3><p>Each pool gets a 0 to 100 risk score from audits, TVL, protocol age, liquidity and how much of the yield is real interest.</p></li>
+      <li class="glass"><span class="stepnum">03</span><h3>You compare</h3><p>Sort, filter and project returns after fees, then deposit on the protocol itself. Tidewatch never touches your funds.</p></li>
+    </ol>
+  </section>
+
+  <section class="block chainfacts glass" aria-labelledby="chainH">
+    <div>
+      <p class="eyebrow">The chain</p>
+      <h2 id="chainH">Robinhood Chain in brief</h2>
+      <p class="sub">A new home for tokenized stocks and on-chain finance. Here is what matters when you look for yield on it.</p>
+      <a class="btn ghost small" href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener">Open the block explorer ↗</a>
+    </div>
+    <dl class="facts">
+      <div><dt>Built on</dt><dd>Arbitrum, as a Layer 2 settling to Ethereum</dd></div>
+      <div><dt>Mainnet</dt><dd>Live since July 2026</dd></div>
+      <div><dt>Stock tokens</dt><dd>ERC-20 tokens tracking real shares, priced by Chainlink feeds</dd></div>
+      <div><dt>Chain ID</dt><dd class="num">4663</dd></div>
+    </dl>
+  </section>
+
+  <section class="block faq" id="faq" aria-labelledby="faqH">
+    <div class="sectionhead"><div><p class="eyebrow">FAQ</p><h2 id="faqH">Questions, answered</h2></div><a class="btn ghost small" href="/learn">Read the yield guide →</a></div>
+    <div class="faqlist glass">
+      <details><summary>Is Tidewatch free?</summary><p>Yes. There is no sign-up, no wallet connection and no fee. You browse the data and deposit directly on the protocol you choose.</p></details>
+      <details><summary>Where does the data come from?</summary><p>Pools, APY and TVL come from DefiLlama Yields, which reads them on-chain. Audits and protocol age come from DefiLlama’s protocol list. We fetch the latest snapshot when you open the site and reuse it for up to 10 minutes while you browse.</p></details>
+      <details><summary>Does Tidewatch ever hold my funds?</summary><p>No. Tidewatch is read-only. We never ask you to connect a wallet or sign anything.</p></details>
+      <details><summary>What does “Low risk” actually mean?</summary><p>It means the pool scores at least 75 out of 100 and the protocol has a public audit. It lowers the odds of a bad outcome, it doesn’t remove them. <a href="/risk">See the full method</a>.</p></details>
+      <details><summary>Why does the APY differ from what the protocol shows?</summary><p>APY moves constantly, and protocols value reward tokens in different ways. We show DefiLlama’s latest reading next to the 30-day average, which is a steadier guide.</p></details>
+      <details><summary>Do protocols pay to be listed or ranked?</summary><p>No. Every pool on the chain is included, and the order is set only by the column you sort by. If we ever add sponsored spots, they’ll be clearly marked and kept outside the table.</p></details>
+    </div>
+  </section>
+
+  <section class="block ctaband glass" aria-labelledby="ctaH">
+    <div>
+      <p class="eyebrow">Stay in the flow</p>
+      <h2 id="ctaH">Follow the tide</h2>
+      <p class="sub">New pools, big APY moves and product updates, posted on X.</p>
+    </div>
+    <div class="ctas">
+      <a class="btn primary" href="https://x.com/usetidewatch" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> Follow @usetidewatch</a>
+      <a class="btn ghost" href="/yields">Explore live yields</a>
+    </div>
+  </section>
+
+  <footer class="sitefoot">
+    <div class="footgrid">
+      <div class="footbrand">
+        <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
+        <p>Independent yield comparison for Robinhood Chain. Live on-chain data, a transparent risk score and no paid placements.</p>
+        <a class="social" href="https://x.com/usetidewatch" target="_blank" rel="noopener me" aria-label="Tidewatch on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@usetidewatch</a>
+      </div>
+      <nav aria-label="Product"><h4>Product</h4><a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/risk">Risk score</a></nav>
+      <nav aria-label="Learn"><h4>Learn</h4><a href="/learn">Yield guide</a><a href="/learn#checklist">Before you deposit</a><a href="/#faq">FAQ</a></nav>
+      <nav aria-label="Company"><h4>Company</h4><a href="/about">About</a><a href="/about#disclaimer">Disclaimer</a><a href="https://x.com/usetidewatch" target="_blank" rel="noopener">X / Twitter</a></nav>
+    </div>
+    <div class="footbase">
+      <span>© 2026 Tidewatch. Not financial advice. Yields are variable and can turn negative.</span>
+      <span id="updated"></span>
+    </div>
   </footer>
 </div>
 <script src="/app.js"></script>

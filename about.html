@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Stock yield · Tidewatch</title>
-<meta name="description" content="What tokenized stocks earn in DeFi on Robinhood Chain compared with holding them at a broker.">
-<link rel="canonical" href="https://tidewatch-olive.vercel.app/stock-yield">
+<title>About · Tidewatch</title>
+<meta name="description" content="Why Tidewatch exists, where its data comes from, and the disclaimer.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/about">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta property="og:title" content="Stock yield · Tidewatch">
-<meta property="og:description" content="What tokenized stocks earn in DeFi on Robinhood Chain compared with holding them at a broker.">
-<meta property="og:url" content="https://tidewatch-olive.vercel.app/stock-yield">
+<meta property="og:title" content="About · Tidewatch">
+<meta property="og:description" content="Why Tidewatch exists, where its data comes from, and the disclaimer.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/about">
 <meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -30,7 +30,7 @@
     <div class="navlinks">
       <a href="/yields">Yields</a>
       <a href="/calculator">Calculator</a>
-      <a href="/stock-yield" aria-current="page">Stock yield</a>
+      <a href="/stock-yield">Stock yield</a>
       <a href="/risk">Risk score</a>
       <a href="/learn">Learn</a>
     </div>
@@ -39,40 +39,53 @@
   <div class="mobilenav" aria-label="Sections">
     <a href="/yields">Yields</a>
     <a href="/calculator">Calculator</a>
-    <a href="/stock-yield" aria-current="page">Stock yield</a>
+    <a href="/stock-yield">Stock yield</a>
     <a href="/risk">Risk score</a>
     <a href="/learn">Learn</a>
   </div>
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <header class="pagehead has-pic">
+  <header class="pagehead">
     <div>
-      <p class="eyebrow">Stock yield</p>
-      <h1>Your shares, working harder</h1>
-      <p class="lede">A stock token tracks the underlying share, and dividends go to both. The difference is what you can earn on top by lending the token out or providing liquidity.</p>
+      <p class="eyebrow">About Tidewatch</p>
+      <h1>Same market. A clearer view.</h1>
+      <p class="lede">Tidewatch makes on-chain yield on Robinhood Chain easy to compare, so you can see what your capital could earn and what risk comes with it, in one place.</p>
     </div>
-    <figure class="headpic"><img src="/assets/brand/tvl-card.webp" alt="A glass card with a rising value chart floating above the sea, next to coin icons" width="1400" height="933" fetchpriority="high"><figcaption>Illustration</figcaption></figure>
   </header>
 
-  <section aria-label="Stock tokens" class="stockwrap">
-    <div class="stockgrid" id="stockGrid"></div>
+  <figure class="headpic widepic"><img src="/assets/brand/banner.webp" alt="Tidewatch banner: on-chain yields, all in one place, above rolling waves" width="2000" height="744" loading="lazy"><figcaption>Illustration</figcaption></figure>
+
+  <section class="block" aria-labelledby="princH">
+    <div class="sectionhead"><div><p class="eyebrow">What we stand for</p><h2 id="princH">Three principles</h2></div></div>
+    <div class="steps">
+      <article class="glass"><span class="stepnum">01</span><h3>Independent</h3><p>No protocol pays for a place in the table. Rankings follow the column you sort by, nothing else.</p></article>
+      <article class="glass"><span class="stepnum">02</span><h3>Transparent</h3><p>The risk score is fully documented, and every number links back to public on-chain data.</p></article>
+      <article class="glass"><span class="stepnum">03</span><h3>Non-custodial</h3><p>Tidewatch is read-only. No wallet connection, no deposits, no sign-up.</p></article>
+    </div>
   </section>
 
-  <div class="twocol">
+  <div class="twocol block">
     <div class="glass note-card">
-      <p class="eyebrow">How stock tokens work</p>
-      <h3>One token, one share</h3>
-      <p>On Robinhood Chain, stock tokens are standard ERC-20 tokens. Each started as one underlying share, and a built-in multiplier adjusts for dividends and splits without changing your balance.</p>
-      <p>Prices come from a Chainlink feed per stock, so lending markets can value them 24/7.</p>
+      <p class="eyebrow">Data</p>
+      <h3>Where the numbers come from</h3>
+      <p>Pools, APY and TVL come from <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, which reads them on-chain. Audit links and launch dates come from DefiLlama’s protocol list. You can check any transaction on the <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener">Robinhood Chain explorer</a>.</p>
     </div>
     <div class="glass note-card">
-      <p class="eyebrow">What to watch</p>
-      <h3>Lending vs. liquidity</h3>
-      <p>Lending a stock token keeps your exposure simple: you earn interest and keep the share. Providing liquidity usually pays more, but you risk impermanent loss if the share price moves a lot.</p>
-      <p><a href="/risk">See how we score that risk →</a></p>
+      <p class="eyebrow">Business model</p>
+      <h3>How Tidewatch stays free</h3>
+      <p>Tidewatch is free today and has no paid placements. If we add sponsored spots later, they’ll be clearly labelled and kept outside the ranking table.</p>
+      <p>Questions or a pool we’re missing? Reach us on <a href="https://x.com/usetidewatch" target="_blank" rel="noopener">X @usetidewatch</a>.</p>
     </div>
   </div>
+
+  <section class="block glass note-card" id="disclaimer" aria-labelledby="discH">
+    <p class="eyebrow">Disclaimer</p>
+    <h2 id="discH" style="font-size:22px">Not financial advice</h2>
+    <p>Tidewatch provides information for general educational purposes only. Nothing on this site is financial, investment, tax or legal advice, or a recommendation to buy, sell or deposit any asset.</p>
+    <p>Yields are variable, can turn negative and are shown as reported by third-party sources that may be delayed or wrong. Decentralized finance carries risks including smart contract bugs, hacks, stablecoin de-pegs, oracle failures, impermanent loss and total loss of funds. The risk score is a simplified rule of thumb and does not guarantee safety.</p>
+    <p>Tidewatch is independent and is not affiliated with Robinhood, DefiLlama or any protocol listed. Always do your own research before you deposit.</p>
+  </section>
 
   <footer class="sitefoot">
     <div class="footgrid">

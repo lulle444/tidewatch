@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yield guide · Tidewatch</title>
+<meta name="description" content="APY, TVL, impermanent loss and more, explained in plain English, plus a checklist before you deposit.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/learn">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Yield guide · Tidewatch">
+<meta property="og:description" content="APY, TVL, impermanent loss and more, explained in plain English, plus a checklist before you deposit.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/learn">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@usetidewatch">
+<meta name="theme-color" content="#EDF3F8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<canvas id="tide" aria-hidden="true"></canvas>
+<div class="wrap">
+  <nav class="nav glass" aria-label="Main">
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
+    <div class="navlinks">
+      <a href="/yields">Yields</a>
+      <a href="/calculator">Calculator</a>
+      <a href="/stock-yield">Stock yield</a>
+      <a href="/risk">Risk score</a>
+      <a href="/learn" aria-current="page">Learn</a>
+    </div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
+  </nav>
+  <div class="mobilenav" aria-label="Sections">
+    <a href="/yields">Yields</a>
+    <a href="/calculator">Calculator</a>
+    <a href="/stock-yield">Stock yield</a>
+    <a href="/risk">Risk score</a>
+    <a href="/learn" aria-current="page">Learn</a>
+  </div>
+
+  <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
+
+  <header class="pagehead">
+    <div>
+      <p class="eyebrow">Yield guide</p>
+      <h1>Understand yield before you chase it</h1>
+      <p class="lede">The terms you’ll see across Tidewatch, explained in plain English, plus a short checklist to run before you deposit anywhere.</p>
+    </div>
+  </header>
+
+  <section class="glossary" aria-label="Glossary">
+    <article class="glass note-card"><p class="eyebrow">APY</p><h3>Annual percentage yield</h3><p>What you’d earn in a year if today’s rate held and earnings were reinvested. It’s a snapshot, not a promise: on-chain rates move every block.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Base vs. rewards</p><h3>Where the yield comes from</h3><p>Base yield is interest or trading fees paid by real users. Rewards are extra tokens a protocol hands out, and they can fall in value or stop at any time.</p></article>
+    <article class="glass note-card"><p class="eyebrow">30-day average</p><h3>The steadier number</h3><p>A short spike can make any pool look great. The 30-day average shows what the pool has actually paid lately, so we use it in the calculator.</p></article>
+    <article class="glass note-card"><p class="eyebrow">TVL</p><h3>Total value locked</h3><p>How much money sits in the pool. More TVL usually means deeper liquidity and a protocol that more people trust, but it’s not a safety guarantee.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Impermanent loss</p><h3>The hidden cost of liquidity</h3><p>When you provide two assets and their prices drift apart, you end up with less value than if you’d just held them. Big fees can offset it, but not always.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Lending vs. liquidity</p><h3>Two ways to earn</h3><p>Lending pays interest from borrowers and keeps your exposure to one asset. Liquidity pools earn trading fees but carry impermanent loss.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Stock tokens</p><h3>Shares on-chain</h3><p>ERC-20 tokens that track a real share and follow its price through a Chainlink feed. You can hold them, lend them out or pair them in a pool.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Audits</p><h3>Reviewed, not bulletproof</h3><p>An audit is an outside review of a protocol’s code. It catches many bugs but not all of them, and audited protocols have still been hacked.</p></article>
+    <article class="glass note-card"><p class="eyebrow">Stablecoins</p><h3>Stable, until they aren’t</h3><p>Stablecoins aim to hold $1, but they depend on reserves or mechanisms that can fail. A stablecoin yield is only as safe as the coin itself.</p></article>
+  </section>
+
+  <section class="block checklist-wrap" id="checklist" aria-labelledby="checkH">
+    <div class="glass note-card">
+      <p class="eyebrow">Before you deposit</p>
+      <h2 id="checkH">A five-point checklist</h2>
+      <ol class="checklist">
+        <li><b>Compare APY with the 30-day average.</b> A big gap usually means a temporary spike.</li>
+        <li><b>Check how much is rewards.</b> Reward tokens can lose value faster than they pay out.</li>
+        <li><b>Look at TVL and protocol age.</b> Young, small pools carry more risk of bugs and exits.</li>
+        <li><b>Know if you face impermanent loss.</b> Single-asset lending avoids it; two-asset pools don’t.</li>
+        <li><b>Size the position.</b> Only deposit what you can afford to lose, and spread across protocols.</li>
+      </ol>
+      <div class="ctas" style="margin-top:20px"><a class="btn primary" href="/yields">Compare live yields</a><a class="btn ghost" href="/risk">How we score risk</a></div>
+    </div>
+    <figure class="pic headpic"><img src="/assets/brand/wave-bars.webp" alt="A breaking wave with rising bars" width="499" height="322" loading="lazy"></figure>
+  </section>
+
+  <footer class="sitefoot">
+    <div class="footgrid">
+      <div class="footbrand">
+        <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
+        <p>Independent yield comparison for Robinhood Chain. Live on-chain data, a transparent risk score and no paid placements.</p>
+        <a class="social" href="https://x.com/usetidewatch" target="_blank" rel="noopener me" aria-label="Tidewatch on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@usetidewatch</a>
+      </div>
+      <nav aria-label="Product"><h4>Product</h4><a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/risk">Risk score</a></nav>
+      <nav aria-label="Learn"><h4>Learn</h4><a href="/learn">Yield guide</a><a href="/learn#checklist">Before you deposit</a><a href="/#faq">FAQ</a></nav>
+      <nav aria-label="Company"><h4>Company</h4><a href="/about">About</a><a href="/about#disclaimer">Disclaimer</a><a href="https://x.com/usetidewatch" target="_blank" rel="noopener">X / Twitter</a></nav>
+    </div>
+    <div class="footbase">
+      <span>© 2026 Tidewatch. Not financial advice. Yields are variable and can turn negative.</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+</div>
+<script src="/app.js"></script>
+<script src="/tide.js"></script>
+</body>
+</html>
