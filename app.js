@@ -63,7 +63,9 @@ async function fetchJson(url){
 function build(poolsRaw, protocolsRaw){
   const meta = new Map();
   (protocolsRaw || []).forEach(p => { if (p && p.slug) meta.set(p.slug, p); });
-  return poolsRaw.filter(p => p.chain === CHAIN && p.tvlUsd > 0).map(p => {
+  // Pools that pay nothing now and haven't lately (e.g. collateral-only markets) aren't yield options.
+  const earns = p => (p.apy ?? ((p.apyBase || 0) + (p.apyReward || 0))) > 0 || (p.apyMean30d || 0) > 0;
+  return poolsRaw.filter(p => p.chain === CHAIN && p.tvlUsd > 0 && earns(p)).map(p => {
     const m = meta.get(p.project);
     const sc = score(p, m);
     const apy = p.apy ?? ((p.apyBase || 0) + (p.apyReward || 0));
