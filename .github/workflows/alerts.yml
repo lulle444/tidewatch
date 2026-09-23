@@ -1,0 +1,12 @@
+name: Check alerts
+# Calls the site's alert check every 15 minutes (Vercel's free cron only runs once a day).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: curl -fsS --max-time 90 https://tidewatch-olive.vercel.app/api/check-alerts

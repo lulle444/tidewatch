@@ -1,4 +1,10 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/check-alerts",
+      "schedule": "0 8 * * *"
+    }
+  ]
 }

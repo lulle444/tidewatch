@@ -4,6 +4,7 @@ const CHAIN = "Robinhood Chain";
 const POOLS_URL = "https://yields.llama.fi/pools";
 const PROTOCOLS_URL = "https://api.llama.fi/protocols";
 const API_URL = "/api/pools";
+const TG_BOT = "";   // Telegram alerts bot username, without @. Empty hides the alert buttons.
 
 const STABLES = /^(USD|USDC|USDT|USDG|USDE|SUSDE|DAI|SDAI|USDS|SUSDS|PYUSD|FRAX|GHO|USD0|RLUSD|USDX|EURC|STEAKUSDG|STEAKUSDC)/;
 const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BRKB JPM V MA LLY UNH XOM WMT JNJ PG HD COST ORCL NFLX AMD CRM ADBE PEP KO " +
@@ -168,6 +169,11 @@ function filtered(){
   });
 }
 
+function bell(p){
+  if (!TG_BOT || state.sample || !/^[0-9a-f-]{36}$/i.test(p.id || "")) return "";
+  return `<a class="bell" href="https://t.me/${TG_BOT}?start=p_${p.id}" target="_blank" rel="noopener" title="Get a Telegram alert for ${esc(p.symbol)}" aria-label="Get a Telegram alert for ${esc(p.symbol)} on ${esc(p.name)}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a>`;
+}
+
 function renderTable(){
   const rows = filtered();
   const shown = rows.slice(0, state.limit);
@@ -183,7 +189,7 @@ function renderTable(){
       <td class="r"><span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
       <td class="r num">${fmtPct(p.apyMean30d)}</td>
       <td class="r num">${fmtUsd(p.tvlUsd)}</td>
-      <td><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span></td>
+      <td><div class="riskcell"><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span>${bell(p)}</div></td>
     </tr>`;
   }).join("") : `<tr><td colspan="6" class="empty">No pools match these filters. Try a lower min. TVL or more risk levels.</td></tr>`;
   set("count", `Showing ${shown.length} of ${rows.length} pools`);

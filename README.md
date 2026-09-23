@@ -8,6 +8,8 @@ Yield comparison for stock tokens and stablecoins on Robinhood Chain.
 
 Data: `api/pools.js` is a Vercel function that fetches DefiLlama, keeps only Robinhood Chain pools and caches the result at the CDN for 10 minutes. The page calls `/api/pools` first and falls back to DefiLlama directly, then to sample data.
 
+Alerts: a Telegram bot. `api/telegram.js` is its webhook, `api/check-alerts.js` compares live APYs with saved alerts (run every 15 minutes by `.github/workflows/alerts.yml`, daily by Vercel cron as a backup) and `api/telegram-setup.js` registers the webhook once. Needs Upstash Redis connected in Vercel and a `TELEGRAM_BOT_TOKEN` env var; set `TG_BOT` in `app.js` to show the bell buttons.
+
 Run locally: `npx serve .` (pages use absolute paths, so opening the files directly won't load styles).
 
 Brand assets live in `assets/` (logo, favicon, share image) and `assets/brand/` (imagery, WebP).
