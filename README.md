@@ -1,9 +1,9 @@
 # Tidewatch
 
-Yield-sammenligner for stock tokens og stablecoins på Robinhood Chain.
+Yield comparison for stock tokens and stablecoins on Robinhood Chain.
 
-- Én statisk fil: `index.html` (ingen build-trin).
-- Data hentes live i browseren fra DefiLlama: `yields.llama.fi/pools` (filtreret på `chain == "Robinhood Chain"`) og `api.llama.fi/protocols` (audits, alder).
-- Hvis data ikke kan hentes, vises tydeligt markerede eksempeldata.
+- One static file: `index.html` (no build step).
+- Data is fetched live in the browser from DefiLlama: `yields.llama.fi/pools` (filtered to `chain == "Robinhood Chain"`) and `api.llama.fi/protocols` (audits, protocol age).
+- If data can't be loaded, clearly labelled sample data is shown instead.
 
-Kør lokalt: åbn `index.html` i en browser, eller `npx serve .`.
+Run locally: open `index.html` in a browser, or `npx serve .`.

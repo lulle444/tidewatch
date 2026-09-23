@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="da">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tidewatch</title>
-<meta name="description" content="Live yield-sammenligning for stock tokens og stablecoins på Robinhood Chain.">
+<meta name="description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -154,114 +154,114 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-si
   <header class="top">
     <div class="brand">
       <span class="mark">Tidewatch · Robinhood Chain</span>
-      <h1>Hvor får dine stock tokens og stablecoins mest ud af det?</h1>
-      <p class="lede">Alle yield-pools på Robinhood Chain samlet ét sted, sorteret efter afkast og vægtet med en risikoscore, så de høje tal ikke står alene.</p>
+      <h1>Where do your stock tokens and stablecoins earn the most?</h1>
+      <p class="lede">Every yield pool on Robinhood Chain in one place, sorted by return and weighted with a risk score, so the big numbers never stand alone.</p>
     </div>
-    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Henter data…</span></div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
   </header>
 
-  <div class="banner" id="sampleBanner" hidden><b>Eksempeldata.</b><span>Live data kunne ikke hentes i denne visning, så tallene herunder er illustrative og ikke aktuelle. Åbn siden som almindelig webside for live tal fra DefiLlama.</span></div>
+  <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <section class="gauge" aria-label="Nøgletal">
+  <section class="gauge" aria-label="Key figures">
     <div><small>Pools</small><strong id="gPools">–</strong><span id="gPoolsSub">&nbsp;</span></div>
-    <div><small>TVL i pools</small><strong id="gTvl">–</strong><span id="gTvlSub">&nbsp;</span></div>
-    <div><small>Bedste stablecoin</small><strong id="gStable">–</strong><span id="gStableSub">&nbsp;</span></div>
-    <div><small>Bedste stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
+    <div><small>TVL in pools</small><strong id="gTvl">–</strong><span id="gTvlSub">&nbsp;</span></div>
+    <div><small>Best stablecoin</small><strong id="gStable">–</strong><span id="gStableSub">&nbsp;</span></div>
+    <div><small>Best stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
   </section>
 
   <div class="layout">
     <main>
-      <h2>Live yield-tabel</h2>
-      <p class="sub">Klik på en kolonne for at sortere. APY er det samlede afkast pr. år, fordelt på basis (renter og fees) og belønninger (tokens, der kan falde i værdi).</p>
+      <h2>Live yield table</h2>
+      <p class="sub">Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value).</p>
       <div class="controls">
-        <div class="chips" role="group" aria-label="Aktivtype">
-          <button class="chip" data-kind="all" aria-pressed="true">Alle</button>
+        <div class="chips" role="group" aria-label="Asset type">
+          <button class="chip" data-kind="all" aria-pressed="true">All</button>
           <button class="chip" data-kind="stable" aria-pressed="false">Stablecoins</button>
           <button class="chip" data-kind="stock" aria-pressed="false">Stock tokens</button>
-          <button class="chip" data-kind="crypto" aria-pressed="false">Krypto</button>
+          <button class="chip" data-kind="crypto" aria-pressed="false">Crypto</button>
         </div>
         <label class="field" for="minTvl">Min. TVL
           <select id="minTvl">
-            <option value="0">Alle</option>
+            <option value="0">All</option>
             <option value="100000" selected>$100k</option>
             <option value="1000000">$1M</option>
             <option value="10000000">$10M</option>
           </select>
         </label>
-        <label class="field" for="maxRisk">Risiko
+        <label class="field" for="maxRisk">Risk
           <select id="maxRisk">
-            <option value="high" selected>Alle</option>
-            <option value="mid">Lav + middel</option>
-            <option value="low">Kun lav</option>
+            <option value="high" selected>All</option>
+            <option value="mid">Low + medium</option>
+            <option value="low">Low only</option>
           </select>
         </label>
         <span class="grow"></span>
-        <input type="search" id="q" placeholder="Søg aktiv eller protokol" aria-label="Søg aktiv eller protokol">
+        <input type="search" id="q" placeholder="Search asset or protocol" aria-label="Search asset or protocol">
       </div>
       <div class="tablebox">
         <table>
           <thead><tr>
-            <th><button data-sort="name">Protokol</button></th>
-            <th><button data-sort="symbol">Aktiv</button></th>
+            <th><button data-sort="name">Protocol</button></th>
+            <th><button data-sort="symbol">Asset</button></th>
             <th class="r"><button data-sort="apy">APY</button></th>
-            <th class="r"><button data-sort="apyMean30d">30d gns.</button></th>
+            <th class="r"><button data-sort="apyMean30d">30d avg.</button></th>
             <th class="r"><button data-sort="tvlUsd">TVL</button></th>
-            <th><button data-sort="score">Risiko</button></th>
+            <th><button data-sort="score">Risk</button></th>
           </tr></thead>
-          <tbody id="rows"><tr><td colspan="6" class="empty">Henter pools…</td></tr></tbody>
+          <tbody id="rows"><tr><td colspan="6" class="empty">Loading pools…</td></tr></tbody>
         </table>
       </div>
-      <div class="more"><span id="count"></span><button class="btn ghost" id="showMore" hidden>Vis flere</button></div>
+      <div class="more"><span id="count"></span><button class="btn ghost" id="showMore" hidden>Show more</button></div>
     </main>
 
     <aside class="side">
       <section class="panel" aria-labelledby="calcH">
-        <h2 id="calcH">Beregner</h2>
-        <p class="sub" style="margin:0">Forventet afkast efter gebyrer, hvis APY holder sig på sit 30-dages gennemsnit.</p>
+        <h2 id="calcH">Calculator</h2>
+        <p class="sub" style="margin:0">Expected return after fees, if APY holds at its 30-day average.</p>
         <form class="form" id="calc">
-          <label for="cAmount">Beløb (USD)<input id="cAmount" type="number" min="0" step="100" value="10000" inputmode="decimal"></label>
-          <label for="cMonths">Måneder<input id="cMonths" type="number" min="1" max="60" step="1" value="3" inputmode="numeric"></label>
-          <label for="cKind">Aktiv
-            <select id="cKind"><option value="stable">Stablecoins</option><option value="stock">Stock tokens</option><option value="crypto">Krypto</option></select>
+          <label for="cAmount">Amount (USD)<input id="cAmount" type="number" min="0" step="100" value="10000" inputmode="decimal"></label>
+          <label for="cMonths">Months<input id="cMonths" type="number" min="1" max="60" step="1" value="3" inputmode="numeric"></label>
+          <label for="cKind">Asset
+            <select id="cKind"><option value="stable">Stablecoins</option><option value="stock">Stock tokens</option><option value="crypto">Crypto</option></select>
           </label>
-          <label for="cRisk">Maks. risiko
-            <select id="cRisk"><option value="low">Lav</option><option value="mid" selected>Middel</option><option value="high">Alle</option></select>
+          <label for="cRisk">Max risk
+            <select id="cRisk"><option value="low">Low</option><option value="mid" selected>Medium</option><option value="high">All</option></select>
           </label>
-          <label class="full" for="cFee">Gebyrer i alt (gas ind/ud, swap, USD)<input id="cFee" type="number" min="0" step="0.5" value="2" inputmode="decimal"></label>
+          <label class="full" for="cFee">Total fees (gas in/out, swaps, USD)<input id="cFee" type="number" min="0" step="0.5" value="2" inputmode="decimal"></label>
         </form>
         <div class="results" id="calcOut"></div>
-        <p class="note">Kun pools med mindst $1M TVL. Belønninger er regnet med til dagens værdi og kan svinge.</p>
+        <p class="note">Only pools with at least $1M TVL. Rewards are counted at today’s value and can fluctuate.</p>
       </section>
     </aside>
   </div>
 
   <section class="stock" aria-labelledby="stockH">
-    <h2 id="stockH">Aktie-yield: token i DeFi mod aktie hos brokeren</h2>
-    <p class="sub">En stock token følger den underliggende aktie, og udbytte tilfalder begge. Forskellen er, hvad du kan tjene oven i ved at låne tokenet ud eller stille det som likviditet.</p>
+    <h2 id="stockH">Stock yield: token in DeFi vs. share at your broker</h2>
+    <p class="sub">A stock token tracks the underlying share, and dividends go to both. The difference is what you can earn on top by lending the token out or providing liquidity.</p>
     <div class="stockgrid" id="stockGrid"></div>
   </section>
 
   <section class="method" aria-labelledby="methodH">
     <div>
-      <h2 id="methodH">Sådan regnes risikoscoren</h2>
-      <p>Scoren går fra 0 til 100, hvor højere er tryggere. Lav risiko kræver mindst 75 point og en audit, middel kræver 50. Scoren er en tommelfingerregel, ikke en garanti, og en revideret protokol kan stadig blive hacket.</p>
+      <h2 id="methodH">How the risk score works</h2>
+      <p>The score runs from 0 to 100, where higher is safer. Low risk needs at least 75 points and an audit; medium needs 50. It’s a rule of thumb, not a guarantee, and an audited protocol can still get hacked.</p>
       <dl>
-        <dt>25 point</dt><dd>Audit: mindst én offentlig audit-rapport registreret hos DefiLlama.</dd>
-        <dt>25 point</dt><dd>TVL i poolen på logaritmisk skala, fuldt ved $100M.</dd>
-        <dt>20 point</dt><dd>Protokollens alder, fuldt ved to år.</dd>
-        <dt>15 point</dt><dd>Likviditet: ét enkelt aktiv uden impermanent loss giver fuldt, likviditetspools med IL giver 0.</dd>
-        <dt>15 point</dt><dd>Hvor meget af APY'en der er rigtige renter frem for belønningstokens.</dd>
+        <dt>25 pts</dt><dd>Audit: at least one public audit report listed on DefiLlama.</dd>
+        <dt>25 pts</dt><dd>Pool TVL on a log scale, full marks at $100M.</dd>
+        <dt>20 pts</dt><dd>Protocol age, full marks at two years.</dd>
+        <dt>15 pts</dt><dd>Liquidity: a single asset with no impermanent loss scores full marks; pools with IL score 0.</dd>
+        <dt>15 pts</dt><dd>How much of the APY is real interest rather than reward tokens.</dd>
       </dl>
     </div>
     <div>
-      <h2>Rangering og betaling</h2>
-      <p>Rækkefølgen i tabellen bestemmes kun af den kolonne, du sorterer efter. Hvis en protokol en dag betaler for synlighed, vises det i en separat og tydeligt markeret boks, aldrig inde i tabellen.</p>
-      <p>Data: <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, som læser pools direkte on-chain. Tidewatch henter på ny hver gang siden åbnes.</p>
+      <h2>Ranking and payment</h2>
+      <p>Table order is set only by the column you sort by. If a protocol ever pays for visibility, it will appear in a separate, clearly marked box, never inside the table.</p>
+      <p>Data: <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, which reads pools directly on-chain. Tidewatch refreshes every time the page loads.</p>
     </div>
   </section>
 
   <footer>
-    <span>Tidewatch er ikke finansiel rådgivning. Afkast er variable og kan blive negative.</span>
+    <span>Tidewatch is not financial advice. Yields are variable and can turn negative.</span>
     <span id="updated"></span>
   </footer>
 </div>
@@ -291,8 +291,8 @@ const fmtUsd = v => {
   if (a >= 1e3) return "$" + (v/1e3).toFixed(a >= 1e5 ? 0 : 1) + "k";
   return "$" + v.toFixed(0);
 };
-const fmtPct = v => (v == null || !isFinite(v)) ? "–" : (v >= 100 ? v.toFixed(0) : v.toFixed(2)) + " %";
-const fmtKr = v => "$" + v.toLocaleString("da-DK", {maximumFractionDigits:0});
+const fmtPct = v => (v == null || !isFinite(v)) ? "–" : (v >= 100 ? v.toFixed(0) : v.toFixed(2)) + "%";
+const fmtUsdFull = v => "$" + v.toLocaleString("en-US", {maximumFractionDigits:0});
 const titleCase = slug => slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
 function classify(sym, stableFlag){
@@ -316,7 +316,7 @@ function score(p, meta){
   s = Math.round(Math.max(0, Math.min(100, s)));
   return {s, band: (s >= 75 && audited) ? "low" : s >= 50 ? "mid" : "high", audited, ageDays};
 }
-const BAND_LABEL = {low:"Lav", mid:"Middel", high:"Høj"};
+const BAND_LABEL = {low:"Low", mid:"Medium", high:"High"};
 const BAND_RANK = {low:0, mid:1, high:2};
 
 /* ---------- data ---------- */
@@ -384,14 +384,14 @@ async function load(){
     if (!list.length) throw new Error("no pools for chain");
     state.pools = list; state.sample = false;
     $("dot").className = "dot live";
-    $("sourceText").textContent = "Live fra DefiLlama · " + new Date().toLocaleTimeString("da-DK", {hour:"2-digit", minute:"2-digit"});
+    $("sourceText").textContent = "Live from DefiLlama · " + new Date().toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"});
   } catch (e) {
     state.pools = build(SAMPLE_POOLS, SAMPLE_PROTOCOLS); state.sample = true;
     $("sampleBanner").hidden = false;
     $("dot").className = "dot sample";
-    $("sourceText").textContent = "Eksempeldata";
+    $("sourceText").textContent = "Sample data";
   }
-  $("updated").textContent = "Indlæst " + new Date().toLocaleString("da-DK", {dateStyle:"medium", timeStyle:"short"});
+  $("updated").textContent = "Loaded " + new Date().toLocaleString("en-US", {dateStyle:"medium", timeStyle:"short"});
   renderAll();
 }
 
@@ -414,11 +414,11 @@ function renderTable(){
   const rows = filtered();
   const shown = rows.slice(0, state.limit);
   $("rows").innerHTML = shown.length ? shown.map(p => {
-    const split = (p.apyReward > 0) ? `<span class="apy-split">${fmtPct(p.apyBase || 0)} + ${fmtPct(p.apyReward)} bel.</span>` : "";
+    const split = (p.apyReward > 0) ? `<span class="apy-split">${fmtPct(p.apyBase || 0)} + ${fmtPct(p.apyReward)} rewards</span>` : "";
     const d = p.d7;
     const delta = (d != null && isFinite(d) && Math.abs(d) >= 0.01) ? `<span class="apy-split delta ${d>0?"up":"down"}">${d>0?"+":""}${d.toFixed(2)} pp 7d</span>` : "";
-    const tag = p.kind === "stock" ? '<span class="tag stock">Aktie</span>' : p.kind === "stable" ? '<span class="tag">Stable</span>' : "";
-    const why = `Audit: ${p.audited ? "ja" : "nej"} · Alder: ${p.ageDays ? Math.round(p.ageDays) + " dage" : "ukendt"} · IL: ${p.ilRisk === "yes" ? "ja" : "nej"}`;
+    const tag = p.kind === "stock" ? '<span class="tag stock">Stock</span>' : p.kind === "stable" ? '<span class="tag">Stable</span>' : "";
+    const why = `Audit: ${p.audited ? "yes" : "no"} · Age: ${p.ageDays ? Math.round(p.ageDays) + " days" : "unknown"} · IL: ${p.ilRisk === "yes" ? "yes" : "no"}`;
     return `<tr>
       <td><div class="proto"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a><span>${esc(p.category || "")}${p.meta ? " · " + esc(p.meta) : ""}</span></div></td>
       <td><div class="assetcell"><span class="asset">${esc(p.symbol)}</span>${tag}</div></td>
@@ -427,8 +427,8 @@ function renderTable(){
       <td class="r num">${fmtUsd(p.tvlUsd)}</td>
       <td><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span></td>
     </tr>`;
-  }).join("") : `<tr><td colspan="6" class="empty">Ingen pools matcher filtrene. Prøv en lavere min. TVL eller flere risikoniveauer.</td></tr>`;
-  $("count").textContent = `Viser ${shown.length} af ${rows.length} pools`;
+  }).join("") : `<tr><td colspan="6" class="empty">No pools match these filters. Try a lower min. TVL or more risk levels.</td></tr>`;
+  $("count").textContent = `Showing ${shown.length} of ${rows.length} pools`;
   $("showMore").hidden = rows.length <= state.limit;
   document.querySelectorAll("th button").forEach(b => {
     const on = b.dataset.sort === state.sort;
@@ -444,14 +444,14 @@ function best(kind, minTvl){
 function renderGauge(){
   const tvl = state.pools.reduce((s,p) => s + p.tvlUsd, 0);
   $("gPools").textContent = state.pools.length;
-  $("gPoolsSub").textContent = new Set(state.pools.map(p => p.project)).size + " protokoller";
+  $("gPoolsSub").textContent = new Set(state.pools.map(p => p.project)).size + " protocols";
   $("gTvl").textContent = fmtUsd(tvl);
-  $("gTvlSub").textContent = state.pools.filter(p => p.kind === "stock").length + " pools med stock tokens";
+  $("gTvlSub").textContent = state.pools.filter(p => p.kind === "stock").length + " pools with stock tokens";
   const s = best("stable", 1e6), k = best("stock", 1e6);
   $("gStable").textContent = s ? fmtPct(s.apyMean30d) : "–";
-  $("gStableSub").textContent = s ? `${s.symbol} på ${s.name}` : "Ingen over $1M TVL";
+  $("gStableSub").textContent = s ? `${s.symbol} on ${s.name}` : "None above $1M TVL";
   $("gStock").textContent = k ? fmtPct(k.apyMean30d) : "–";
-  $("gStockSub").textContent = k ? `${k.symbol} på ${k.name}` : "Ingen over $1M TVL";
+  $("gStockSub").textContent = k ? `${k.symbol} on ${k.name}` : "None above $1M TVL";
 }
 
 function renderCalc(){
@@ -464,10 +464,10 @@ function renderCalc(){
     .sort((a,b) => b.g - a.g).slice(0, 5);
   $("calcOut").innerHTML = opts.length ? opts.map(({p,g}) => `
     <div class="res">
-      <b>${esc(p.symbol)} · ${esc(p.name)}</b><span class="gain">${g >= 0 ? "+" : "−"}${fmtKr(Math.abs(g))}</span>
+      <b>${esc(p.symbol)} · ${esc(p.name)}</b><span class="gain">${g >= 0 ? "+" : "−"}${fmtUsdFull(Math.abs(g))}</span>
       <small><span class="risk ${p.band}" style="padding:2px 6px">${BAND_LABEL[p.band]}</span> · ${fmtUsd(p.tvlUsd)} TVL</small><small class="r">${fmtPct(p.apyMean30d)}</small>
     </div>`).join("")
-    : `<p class="note">Ingen pools over $1M TVL med den risiko. Vælg "Alle" under maks. risiko.</p>`;
+    : `<p class="note">No pools above $1M TVL at that risk level. Choose "All" under max risk.</p>`;
 }
 
 function renderStock(){
@@ -480,17 +480,17 @@ function renderStock(){
     else cur.n++;
   });
   const cards = [...byTicker.values()].sort((a,b) => b.tvlUsd - a.tvlUsd).slice(0, 6);
-  if (!cards.length){ $("stockGrid").innerHTML = `<p class="sub">Ingen stock token-pools med over $100k TVL lige nu.</p>`; return; }
+  if (!cards.length){ $("stockGrid").innerHTML = `<p class="sub">No stock token pools above $100k TVL right now.</p>`; return; }
   const max = Math.max(...cards.map(c => c.apyMean30d), 1);
   $("stockGrid").innerHTML = cards.map(c => {
     const on10k = 10000 * (c.apyMean30d/100);
     return `<article class="scard">
-      <header><b>${esc(c.ticker)}</b><span>${c.n} pool${c.n > 1 ? "s" : ""} · bedst på ${esc(c.name)}</span></header>
+      <header><b>${esc(c.ticker)}</b><span>${c.n} pool${c.n > 1 ? "s" : ""} · best on ${esc(c.name)}</span></header>
       <div class="bars">
-        <div class="bar"><span>Hos broker</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="v">0,00 %</span></div>
-        <div class="bar defi"><span>I DeFi</span><span class="track"><span class="fill" style="width:${(c.apyMean30d/max*100).toFixed(1)}%"></span></span><span class="v">${fmtPct(c.apyMean30d)}</span></div>
+        <div class="bar"><span>At broker</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="v">0.00%</span></div>
+        <div class="bar defi"><span>In DeFi</span><span class="track"><span class="fill" style="width:${(c.apyMean30d/max*100).toFixed(1)}%"></span></span><span class="v">${fmtPct(c.apyMean30d)}</span></div>
       </div>
-      <p>Ekstra ca. ${fmtKr(on10k)} om året på $10.000 i ${esc(c.ticker)}${c.ilRisk === "yes" ? ", men som likviditet risikerer du impermanent loss, hvis kursen flytter sig meget" : ", ved udlån uden impermanent loss"}.</p>
+      <p>About ${fmtUsdFull(on10k)} extra per year on $10,000 of ${esc(c.ticker)}${c.ilRisk === "yes" ? ", but as liquidity you risk impermanent loss if the price moves a lot" : ", from lending with no impermanent loss"}.</p>
     </article>`;
   }).join("");
 }
