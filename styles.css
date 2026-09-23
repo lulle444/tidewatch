@@ -223,3 +223,4 @@ a.feature:hover{transform:translateY(-3px)}
 .headpic img{display:block;width:100%;height:auto}
 .headpic figcaption{position:absolute;right:12px;bottom:12px;font:500 10.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 9px;border-radius:999px}
 @media (max-width:900px){.pagehead.has-pic{grid-template-columns:minmax(0,1fr);gap:24px}}
+.footlinks a.social{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:500}
