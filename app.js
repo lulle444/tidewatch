@@ -171,7 +171,7 @@ function filtered(){
 
 function bell(p){
   if (!TG_BOT || state.sample || !/^[0-9a-f-]{36}$/i.test(p.id || "")) return "";
-  return `<a class="bell" href="https://t.me/${TG_BOT}?start=p_${p.id}" target="_blank" rel="noopener" title="Get a Telegram alert for ${esc(p.symbol)}" aria-label="Get a Telegram alert for ${esc(p.symbol)} on ${esc(p.name)}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a>`;
+  return `<a class="bell" href="https://t.me/${TG_BOT}?start=p_${p.id}" target="_blank" rel="noopener" data-pool="${esc(p.id)}" data-label="${esc(p.symbol)} · ${esc(p.name)}" title="Get a Telegram alert for ${esc(p.symbol)}" aria-label="Get a Telegram alert for ${esc(p.symbol)} on ${esc(p.name)}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></a>`;
 }
 
 function renderTable(){
@@ -276,6 +276,39 @@ $("minTvl")?.addEventListener("change", e => { state.minTvl = +e.target.value; s
 $("maxRisk")?.addEventListener("change", e => { state.maxRisk = e.target.value; state.limit = PAGE_LIMIT; renderTable(); });
 $("q")?.addEventListener("input", e => { state.q = e.target.value; renderTable(); });
 $("showMore")?.addEventListener("click", () => { state.limit += 25; renderTable(); });
+
+/* Alert chooser. On phones the t.me link opens the Telegram app directly; on computers many people
+   only use Telegram Web, which t.me can't open, so we offer both plus the command to paste. */
+function alertDialog(id, label){
+  let d = $("alertDlg");
+  if (!d){
+    d = document.createElement("dialog"); d.id = "alertDlg"; d.className = "alertdlg glass";
+    d.setAttribute("aria-labelledby", "alertDlgH");
+    d.innerHTML = `<form method="dialog"><button class="dlgx" aria-label="Close">×</button></form>
+      <p class="eyebrow">Telegram alert</p><h3 id="alertDlgH"></h3>
+      <p class="dlgsub">Open our bot, tap Start and pick the APY level to watch. We check every 15 minutes.</p>
+      <div class="dlgbtns"><a class="btn primary" id="dlgApp" target="_blank" rel="noopener">Open Telegram app</a><a class="btn ghost" id="dlgWeb" target="_blank" rel="noopener">Open Telegram Web</a></div>
+      <p class="dlgsub">Bot doesn’t show the pool? Send it this message:</p>
+      <div class="dlgcmd"><code id="dlgCmd"></code><button class="btn ghost small" id="dlgCopy" type="button">Copy</button></div>`;
+    document.body.appendChild(d);
+    d.addEventListener("click", e => { if (e.target === d) d.close(); });
+    $("dlgCopy").addEventListener("click", () => {
+      navigator.clipboard?.writeText($("dlgCmd").textContent).then(() => { $("dlgCopy").textContent = "Copied"; }, () => {});
+    });
+  }
+  const start = "p_" + id;
+  $("alertDlgH").textContent = label;
+  $("dlgApp").href = `https://t.me/${TG_BOT}?start=${start}`;
+  $("dlgWeb").href = "https://web.telegram.org/k/#?tgaddr=" + encodeURIComponent(`tg://resolve?domain=${TG_BOT}&start=${start}`);
+  $("dlgCmd").textContent = "/start " + start;
+  $("dlgCopy").textContent = "Copy";
+  d.showModal();
+}
+$("rows")?.addEventListener("click", e => {
+  const a = e.target.closest(".bell");
+  if (!a || matchMedia("(pointer: coarse)").matches || typeof HTMLDialogElement !== "function") return;
+  e.preventDefault(); alertDialog(a.dataset.pool, a.dataset.label);
+});
 document.querySelectorAll("th button").forEach(b => b.addEventListener("click", () => {
   const k = b.dataset.sort;
   if (state.sort === k) state.dir = -state.dir; else { state.sort = k; state.dir = (k === "name" || k === "symbol") ? 1 : -1; }
