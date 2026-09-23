@@ -11,7 +11,9 @@
 <meta property="og:title" content="Yields · Tidewatch">
 <meta property="og:description" content="Every yield pool on Robinhood Chain, sortable by APY, TVL and risk.">
 <meta property="og:url" content="https://tidewatch-olive.vercel.app/yields">
-<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#EDF3F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,10 +43,13 @@
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <header class="pagehead">
-    <p class="eyebrow">Live yield table</p>
-    <h1>Where your capital earns the most</h1>
-    <p class="lede">Every pool on Robinhood Chain. Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value).</p>
+  <header class="pagehead has-pic">
+    <div>
+      <p class="eyebrow">Live yield table</p>
+      <h1>Where your capital earns the most</h1>
+      <p class="lede">Every pool on Robinhood Chain. Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value).</p>
+    </div>
+    <figure class="headpic"><img src="/assets/brand/pools-table.webp" alt="A glass Tidewatch table of pools with APY, TVL and risk, standing on a rock by the sea" width="1400" height="788" fetchpriority="high"><figcaption>Illustration</figcaption></figure>
   </header>
 
   <section class="gauge glass" aria-label="Key figures">

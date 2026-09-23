@@ -217,3 +217,9 @@ a.feature:hover{transform:translateY(-3px)}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:820px){.nextsteps,.twocol{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){a.feature,.nextsteps a{transition:none}a.feature:hover,.nextsteps a:hover{transform:none}}
+.pagehead.has-pic{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:center;padding-bottom:28px}
+.pagehead.has-pic .lede{margin-bottom:0}
+.headpic{margin:0;position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--glass-edge)}
+.headpic img{display:block;width:100%;height:auto}
+.headpic figcaption{position:absolute;right:12px;bottom:12px;font:500 10.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 9px;border-radius:999px}
+@media (max-width:900px){.pagehead.has-pic{grid-template-columns:minmax(0,1fr);gap:24px}}
