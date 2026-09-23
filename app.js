@@ -4,7 +4,7 @@ const CHAIN = "Robinhood Chain";
 const POOLS_URL = "https://yields.llama.fi/pools";
 const PROTOCOLS_URL = "https://api.llama.fi/protocols";
 const API_URL = "/api/pools";
-const TG_BOT = "";   // Telegram alerts bot username, without @. Empty hides the alert buttons.
+const TG_BOT = "Usetidewatch_bot";   // Telegram alerts bot username, without @. Empty hides the alert buttons.
 
 const STABLES = /^(USD|USDC|USDT|USDG|USDE|SUSDE|DAI|SDAI|USDS|SUSDS|PYUSD|FRAX|GHO|USD0|RLUSD|USDX|EURC|STEAKUSDG|STEAKUSDC)/;
 const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BRKB JPM V MA LLY UNH XOM WMT JNJ PG HD COST ORCL NFLX AMD CRM ADBE PEP KO " +
