@@ -11,183 +11,258 @@
 <meta property="og:description" content="Live yield comparison for stock tokens and stablecoins on Robinhood Chain.">
 <meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0A2340">
+<meta name="theme-color" content="#EDF3F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
 <style>
 [hidden]{display:none!important}
 :root{
   color-scheme: light;
-  --ground:#F2F5F6; --surface:#FFFFFF; --surface-2:#E8EEF0; --ink:#0A2340; --muted:#56687A; --line:#D3DDE2;
-  --accent:#0D7480; --accent-soft:#D5EEEC; --accent-ink:#FFFFFF;
-  --low:#23804F; --low-soft:#DCF0E4; --mid:#A86B00; --mid-soft:#F6EACB; --high:#B83A26; --high-soft:#F6DDD7;
-  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --ground:#EDF3F8; --ground-2:#E2ECF4;
+  --glass:rgba(255,255,255,.64); --glass-strong:rgba(255,255,255,.86); --glass-edge:rgba(255,255,255,.9);
+  --surface:#FFFFFF; --surface-2:#F1F6FA;
+  --ink:#0A2340; --muted:#5A6E84; --line:rgba(10,35,64,.10);
+  --accent:#0D7480; --accent-2:#2BB5B0; --accent-soft:#DDF1F0; --accent-ink:#FFFFFF;
+  --low:#1F7A4B; --low-soft:#DCF0E4; --mid:#9A6200; --mid-soft:#F6EACB; --high:#B03A26; --high-soft:#F7E0DA;
+  --shadow:0 24px 60px -28px rgba(10,35,64,.35), 0 2px 6px -2px rgba(10,35,64,.08);
+  --display:"Montserrat", "Avenir Next", "Segoe UI", sans-serif;
   --body:"IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme: dark;
-    --ground:#0A131C; --surface:#101C28; --surface-2:#172636; --ink:#E4EDF1; --muted:#90A3B3; --line:#223445;
-    --accent:#47BFB1; --accent-soft:#12352F; --accent-ink:#06201C;
-    --low:#5CC98C; --low-soft:#143324; --mid:#E0A93A; --mid-soft:#3A2C0E; --high:#EE7A63; --high-soft:#3E1D17;
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme: dark;
-  --ground:#0A131C; --surface:#101C28; --surface-2:#172636; --ink:#E4EDF1; --muted:#90A3B3; --line:#223445;
-  --accent:#47BFB1; --accent-soft:#12352F; --accent-ink:#06201C;
-  --low:#5CC98C; --low-soft:#143324; --mid:#E0A93A; --mid-soft:#3A2C0E; --high:#EE7A63; --high-soft:#3E1D17;
-}
 *{box-sizing:border-box}
-body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.55 var(--body)}
-.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;color:var(--ink);font:15px/1.6 var(--body);
+  background:radial-gradient(1200px 600px at 85% -10%, #D4ECF3 0%, transparent 60%),
+             radial-gradient(900px 500px at -10% 30%, #E4EEF8 0%, transparent 60%),
+             linear-gradient(180deg, #F6F9FC 0%, var(--ground) 40%, var(--ground-2) 100%);
+  background-attachment:fixed}
 a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+#tide{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding-inline:24px;padding-block:0 72px}
+.glass{background:var(--glass);border:1px solid var(--glass-edge);border-radius:20px;box-shadow:var(--shadow);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+.eyebrow{font:500 11px/1.2 var(--display);letter-spacing:.32em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h1,h2,h3{font-family:var(--display);color:var(--ink);text-wrap:balance}
+h2{font-size:clamp(24px,2.6vw,32px);font-weight:600;line-height:1.15;letter-spacing:-.015em;margin:0 0 8px}
+h3{font-size:17px;font-weight:600;margin:0 0 6px;letter-spacing:-.005em}
+.sub{color:var(--muted);margin:0 0 18px;font-size:15px;max-width:62ch}
+section{scroll-margin-top:90px}
 
-/* header */
-.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;margin-bottom:22px}
-.brand{display:flex;flex-direction:column;gap:4px}
-.logo{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);margin-bottom:14px;width:fit-content}
-.logo img{width:52px;height:52px;flex:none}
-.logo .word{font:600 22px/1 "Montserrat", var(--body);letter-spacing:.12em}
+/* nav */
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:5;margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 16px;border-radius:999px}
+.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo img{width:36px;height:36px;flex:none}
+.logo .word{font:600 16px/1 var(--display);letter-spacing:.2em}
 .logo .word b{font-weight:600;color:var(--accent)}
-.logo small{display:block;margin-top:5px;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-h1{font:700 clamp(28px,4.6vw,44px)/1.05 var(--display);margin:0;letter-spacing:-.015em;text-wrap:balance;max-width:22ch}
-.lede{margin:10px 0 0;color:var(--muted);max-width:62ch}
-.source{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.navlinks{display:flex;align-items:center;gap:4px}
+.navlinks a{font:500 13px/1 var(--body);color:var(--muted);text-decoration:none;padding:9px 12px;border-radius:999px}
+.navlinks a:hover{color:var(--ink);background:rgba(255,255,255,.7)}
+.source{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--glass-strong);white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
-.dot.live{background:var(--low);box-shadow:0 0 0 4px var(--low-soft)}
-.dot.sample{background:var(--mid);box-shadow:0 0 0 4px var(--mid-soft)}
-.banner{display:flex;gap:10px;align-items:flex-start;background:var(--mid-soft);color:var(--ink);border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:18px}
+.dot.live{background:#27A36B;box-shadow:0 0 0 4px rgba(39,163,107,.18)}
+.dot.sample{background:#D99A1E;box-shadow:0 0 0 4px rgba(217,154,30,.2)}
+@media (max-width:820px){.navlinks{display:none}}
+@media (max-width:460px){.logo .word{display:none}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center;padding-block:64px 44px}
+.hero h1{font-size:clamp(36px,5.2vw,62px);line-height:1.04;font-weight:700;letter-spacing:-.03em;margin:0 0 18px;max-width:14ch}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent) 0%,var(--accent-2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:17px;color:var(--muted);margin:0 0 28px;max-width:46ch}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.btn{appearance:none;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;font:600 14px/1 var(--body);padding:14px 20px;border-radius:999px;cursor:pointer;text-decoration:none;transition:transform .2s ease, box-shadow .2s ease}
+.btn.primary{background:linear-gradient(135deg,#0A2340 0%,#0D5C73 100%);color:#fff;box-shadow:0 12px 28px -12px rgba(10,35,64,.6)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 16px 34px -12px rgba(10,35,64,.65)}
+.btn.ghost{background:var(--glass-strong);color:var(--ink);border-color:var(--glass-edge)}
+.btn.ghost:hover{background:#fff}
+.btn.small{padding:10px 16px;font-size:13px}
+.trust{margin-top:26px;font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+.visual{position:relative}
+.visual figure{margin:0;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -36px rgba(10,35,64,.45);border:1px solid var(--glass-edge);aspect-ratio:501/355;max-width:100%}
+.visual figure img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02)}
+.float{position:absolute;right:-22px;top:-24px;padding:16px 18px;min-width:210px}
+.float small{display:block;font:500 10.5px/1.2 var(--display);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.float strong{display:block;font:500 28px/1.15 var(--mono);color:var(--ink);margin-top:6px}
+.float span{font-size:12.5px;color:var(--muted)}
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr);gap:40px;padding-block:44px 32px}.float{right:12px;top:-20px}}
+
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--mid-soft);color:var(--ink);border-radius:14px;padding:12px 16px;font-size:14px;margin-bottom:18px}
 .banner b{color:var(--mid)}
 
-/* tide gauge stats */
-.gauge{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line);margin-bottom:28px}
-.gauge div{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+/* stats */
+.gauge{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;margin:18px 0 72px}
+.gauge div{padding:18px 20px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .gauge div+div{border-left:1px solid var(--line)}
-.gauge small{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.gauge strong{font:500 22px/1.2 var(--mono);font-variant-numeric:tabular-nums}
-.gauge span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gauge small{font:500 10.5px/1.2 var(--display);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.gauge strong{font:500 26px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.gauge span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:760px){.gauge{grid-template-columns:repeat(2,minmax(0,1fr))}.gauge div:nth-child(3){border-left:0}.gauge div:nth-child(n+3){border-top:1px solid var(--line)}}
 
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}
-@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
-h2{font:700 22px/1.2 var(--display);margin:0 0 4px;letter-spacing:-.01em}
-.sub{color:var(--muted);margin:0 0 14px;font-size:14px;max-width:62ch}
+/* features */
+.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-bottom:88px}
+.feature{overflow:hidden;display:flex;flex-direction:column}
+.feature img{width:100%;height:auto;aspect-ratio:499/314;object-fit:cover;display:block}
+.feature div{padding:20px 22px 24px}
+.feature p{margin:0;color:var(--muted);font-size:14px}
+@media (max-width:900px){.features{grid-template-columns:minmax(0,1fr)}}
 
-/* controls */
-.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+/* yields */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+.tablepanel{padding:22px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13px/1 var(--body);padding:8px 12px;border-radius:999px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.chip{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--ink);font:500 13px/1 var(--body);padding:9px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .field{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
-select,input[type=text],input[type=number],input[type=search]{font:14px var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
-input[type=search]{min-width:0;width:180px}
+select,input[type=text],input[type=number],input[type=search]{font:14px var(--body);color:var(--ink);background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+input[type=search]{min-width:0;width:200px}
 .controls .grow{flex:1}
-
-/* table */
-.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
 table{width:100%;border-collapse:collapse;min-width:720px}
-th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
-th{font:600 12px/1.2 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;background:var(--surface-2)}
+th{font:500 10.5px/1.2 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);white-space:nowrap;background:var(--surface-2)}
 th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
 th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 th.r,td.r{text-align:right}
 th.r button{justify-content:flex-end}
-tbody tr:hover{background:var(--surface-2)}
+tbody tr{transition:background .15s ease}
+tbody tr:hover{background:#F5FAFC}
 .proto{display:flex;flex-direction:column;gap:1px;min-width:0}
 .proto a{font-weight:600;color:var(--ink);text-decoration:none}
 .proto a:hover{text-decoration:underline}
 .proto span{font-size:12px;color:var(--muted)}
 .assetcell{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .asset{font:500 14px var(--mono)}
-.tag{display:inline-block;font:500 11px/1 var(--body);letter-spacing:.04em;padding:3px 6px;border-radius:4px;background:var(--surface-2);color:var(--muted)}
+.tag{display:inline-block;font:500 10.5px/1 var(--body);letter-spacing:.06em;padding:4px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
 .tag.stock{background:var(--accent-soft);color:var(--accent)}
 .apy{font:500 16px var(--mono);font-variant-numeric:tabular-nums}
 .apy-split{display:block;font-size:11.5px;color:var(--muted);font-family:var(--mono)}
 .delta.up{color:var(--low)} .delta.down{color:var(--high)}
-.risk{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--body);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.risk{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--body);padding:6px 9px;border-radius:999px;white-space:nowrap}
 .risk.low{background:var(--low-soft);color:var(--low)} .risk.mid{background:var(--mid-soft);color:var(--mid)} .risk.high{background:var(--high-soft);color:var(--high)}
 .risk .num{font-weight:500}
 .empty{padding:28px;text-align:center;color:var(--muted)}
-.more{margin-top:10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);gap:10px;flex-wrap:wrap}
-.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:600 14px var(--body);padding:9px 14px;border-radius:6px;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--accent)}
+.more{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);gap:10px;flex-wrap:wrap}
 
-/* side panels */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
-.side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
-@media (max-width:980px){.side{position:static}}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 14px}
-.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);letter-spacing:.03em}
+/* calculator */
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px)}
+@media (max-width:1000px){.side{position:static}}
+.panel{padding:22px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);letter-spacing:.02em}
 .form label.full{grid-column:1/-1}
 .form input,.form select{width:100%}
 .results{display:flex;flex-direction:column}
-.res{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.res{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:12px 0;border-top:1px solid var(--line)}
 .res b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.res .gain{font:500 16px var(--mono);text-align:right;color:var(--low)}
+.res .gain{font:500 17px var(--mono);text-align:right;color:var(--low)}
 .res small{color:var(--muted);font-size:12px}
 .res small.r{text-align:right;font-family:var(--mono)}
 .note{font-size:12px;color:var(--muted);margin:10px 0 0}
 
 /* stock yield */
-.stock{margin-top:40px}
-.stockgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.scard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.block{margin-top:96px}
+.stockgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.scard{padding:20px;display:flex;flex-direction:column;gap:12px}
 .scard header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.scard header b{font:500 18px var(--mono)}
+.scard header b{font:500 20px var(--mono)}
 .scard header span{font-size:12px;color:var(--muted);text-align:right}
-.bars{display:flex;flex-direction:column;gap:8px}
+.bars{display:flex;flex-direction:column;gap:9px}
 .bar{display:grid;grid-template-columns:78px minmax(0,1fr) 62px;gap:8px;align-items:center;font-size:12.5px}
-.bar .track{height:10px;background:var(--surface-2);border-radius:3px;overflow:hidden}
-.bar .fill{height:100%;background:var(--muted);border-radius:3px}
-.bar.defi .fill{background:var(--accent)}
+.bar .track{height:10px;background:rgba(10,35,64,.07);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:#9AAAB9;border-radius:99px}
+.bar.defi .fill{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
 .bar .v{text-align:right;font-family:var(--mono)}
 .scard p{margin:0;font-size:13px;color:var(--muted)}
 
 /* method */
-.method{margin-top:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
-@media (max-width:780px){.method{grid-template-columns:minmax(0,1fr)}}
-.method dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.method{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:start}
+.method .glass{padding:28px}
+.method dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:14px}
 .method dt{font-family:var(--mono);color:var(--accent);font-weight:500;white-space:nowrap}
 .method dd{margin:0;color:var(--muted)}
-.method p{font-size:14px;color:var(--muted);margin:0 0 10px;max-width:62ch}
-footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
-@media (prefers-reduced-motion:no-preference){.fill{transition:width .5s ease}}
+.method p{font-size:14.5px;color:var(--muted);margin:0 0 14px;max-width:62ch}
+.pic{border-radius:24px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--glass-edge);position:relative}
+.pic img{display:block;width:100%;height:auto;aspect-ratio:499/322}
+.pic .cap{position:absolute;left:18px;right:18px;bottom:18px;padding:16px 18px}
+.pic .cap p{margin:0;font-size:13.5px;color:var(--ink)}
+@media (max-width:900px){.method{grid-template-columns:minmax(0,1fr)}}
 
-/* dynamic tide background */
-#tide{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
-.wrap{position:relative;z-index:1}
+footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;align-items:center}
+footer .logo img{width:26px;height:26px}
+footer .logo .word{font-size:12px}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .6s ease}}
 </style>
 </head>
 <body>
 <canvas id="tide" aria-hidden="true"></canvas>
 <div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <a class="logo" href="/" aria-label="Tidewatch home"><img src="assets/logo-mark.png" alt="" width="52" height="52"><span><span class="word">TIDE<b>WATCH</b></span><small>Robinhood Chain yields</small></span></a>
-      <h1>Where do your stock tokens and stablecoins earn the most?</h1>
-      <p class="lede">Every yield pool on Robinhood Chain in one place, sorted by return and weighted with a risk score, so the big numbers never stand alone.</p>
+  <nav class="nav glass" aria-label="Main">
+    <a class="logo" href="#top" aria-label="Tidewatch home"><img src="assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
+    <div class="navlinks">
+      <a href="#yields">Yields</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#stock-yield">Stock yield</a>
+      <a href="#risk">Risk score</a>
     </div>
     <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div>
+      <p class="eyebrow">Robinhood Chain · All yields in one place</p>
+      <h1>Ride the <em>yield</em>, not the hype.</h1>
+      <p class="lede">Every yield pool for stock tokens and stablecoins on Robinhood Chain, ranked by return and weighed by a transparent risk score.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#yields">Explore live yields</a>
+        <a class="btn ghost" href="#risk">How we score risk</a>
+      </div>
+      <p class="trust">Live on-chain data via DefiLlama · No sign-up · Independent ranking</p>
+    </div>
+    <div class="visual">
+      <figure><img src="assets/brand/hero-logo.webp" alt="The Tidewatch wave emblem resting on calm water" width="501" height="355" fetchpriority="high"></figure>
+      <div class="float glass" aria-live="polite">
+        <small>Best stablecoin now</small>
+        <strong id="hStable">–</strong>
+        <span id="hStableSub">&nbsp;</span>
+      </div>
+    </div>
   </header>
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <section class="gauge" aria-label="Key figures">
+  <section class="gauge glass" aria-label="Key figures">
     <div><small>Pools</small><strong id="gPools">–</strong><span id="gPoolsSub">&nbsp;</span></div>
     <div><small>TVL in pools</small><strong id="gTvl">–</strong><span id="gTvlSub">&nbsp;</span></div>
     <div><small>Best stablecoin</small><strong id="gStable">–</strong><span id="gStableSub">&nbsp;</span></div>
     <div><small>Best stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
   </section>
 
-  <div class="layout">
-    <main>
-      <h2>Live yield table</h2>
+  <section class="features" aria-label="Why Tidewatch">
+    <article class="feature glass">
+      <img src="assets/brand/globe.webp" alt="" width="499" height="314" loading="lazy">
+      <div><p class="eyebrow">All yields in one place</p><h3>Every pool on the chain</h3><p>Lending, liquidity and vaults across Robinhood Chain, refreshed every time you open the page.</p></div>
+    </article>
+    <article class="feature glass">
+      <img src="assets/brand/shield.webp" alt="" width="499" height="314" loading="lazy">
+      <div><p class="eyebrow">Data-driven decisions</p><h3>Risk-scored, not just ranked</h3><p>Audits, TVL, protocol age and liquidity combine into one score, so a big APY never stands alone.</p></div>
+    </article>
+    <article class="feature glass">
+      <img src="assets/brand/compare-track.webp" alt="" width="501" height="322" loading="lazy">
+      <div><p class="eyebrow">Compare · Track · Earn</p><h3>Stock tokens that work for you</h3><p>See what tokenized shares earn in DeFi compared with just holding them at a broker.</p></div>
+    </article>
+  </section>
+
+  <div class="layout" id="yields">
+    <main class="tablepanel glass">
+      <p class="eyebrow">Live yield table</p>
+      <h2>Where your capital earns the most</h2>
       <p class="sub">Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value).</p>
       <div class="controls">
         <div class="chips" role="group" aria-label="Asset type">
@@ -227,12 +302,13 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-si
           <tbody id="rows"><tr><td colspan="6" class="empty">Loading pools…</td></tr></tbody>
         </table>
       </div>
-      <div class="more"><span id="count"></span><button class="btn ghost" id="showMore" hidden>Show more</button></div>
+      <div class="more"><span id="count"></span><button class="btn ghost small" id="showMore" hidden>Show more</button></div>
     </main>
 
-    <aside class="side">
-      <section class="panel" aria-labelledby="calcH">
-        <h2 id="calcH">Calculator</h2>
+    <aside class="side" id="calculator">
+      <section class="panel glass" aria-labelledby="calcH">
+        <p class="eyebrow">Calculator</p>
+        <h2 id="calcH" style="font-size:24px">Project your return</h2>
         <p class="sub" style="margin:0">Expected return after fees, if APY holds at its 30-day average.</p>
         <form class="form" id="calc">
           <label for="cAmount">Amount (USD)<input id="cAmount" type="number" min="0" step="100" value="10000" inputmode="decimal"></label>
@@ -251,14 +327,16 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-si
     </aside>
   </div>
 
-  <section class="stock" aria-labelledby="stockH">
-    <h2 id="stockH">Stock yield: token in DeFi vs. share at your broker</h2>
+  <section class="block" id="stock-yield" aria-labelledby="stockH">
+    <p class="eyebrow">Stock yield</p>
+    <h2 id="stockH">Your shares, working harder</h2>
     <p class="sub">A stock token tracks the underlying share, and dividends go to both. The difference is what you can earn on top by lending the token out or providing liquidity.</p>
     <div class="stockgrid" id="stockGrid"></div>
   </section>
 
-  <section class="method" aria-labelledby="methodH">
-    <div>
+  <section class="block method" id="risk" aria-labelledby="methodH">
+    <div class="glass">
+      <p class="eyebrow">Transparent by design</p>
       <h2 id="methodH">How the risk score works</h2>
       <p>The score runs from 0 to 100, where higher is safer. Low risk needs at least 75 points and an audit; medium needs 50. It’s a rule of thumb, not a guarantee, and an audited protocol can still get hacked.</p>
       <dl>
@@ -268,15 +346,16 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-si
         <dt>15 pts</dt><dd>Liquidity: a single asset with no impermanent loss scores full marks; pools with IL score 0.</dd>
         <dt>15 pts</dt><dd>How much of the APY is real interest rather than reward tokens.</dd>
       </dl>
+      <p style="margin-top:18px">Table order is set only by the column you sort by. If a protocol ever pays for visibility, it will appear in a separate, clearly marked box, never inside the table. Data: <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, which reads pools directly on-chain.</p>
     </div>
-    <div>
-      <h2>Ranking and payment</h2>
-      <p>Table order is set only by the column you sort by. If a protocol ever pays for visibility, it will appear in a separate, clearly marked box, never inside the table.</p>
-      <p>Data: <a href="https://defillama.com/yields?chain=Robinhood%20Chain" target="_blank" rel="noopener">DefiLlama Yields</a>, which reads pools directly on-chain. Tidewatch refreshes every time the page loads.</p>
+    <div class="pic">
+      <img src="assets/brand/wave-bars.webp" alt="A breaking wave with rising bars, the Tidewatch motif" width="499" height="322" loading="lazy">
+      <div class="cap glass"><p class="eyebrow" style="margin-bottom:6px">Tomorrow’s yields, today</p><p>Alerts for big APY moves are coming soon.</p></div>
     </div>
   </section>
 
   <footer>
+    <a class="logo" href="#top" aria-label="Back to top"><img src="assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
     <span>Tidewatch is not financial advice. Yields are variable and can turn negative.</span>
     <span id="updated"></span>
   </footer>
@@ -466,6 +545,7 @@ function renderGauge(){
   const s = best("stable", 1e6), k = best("stock", 1e6);
   $("gStable").textContent = s ? fmtPct(s.apyMean30d) : "–";
   $("gStableSub").textContent = s ? `${s.symbol} on ${s.name}` : "None above $1M TVL";
+  $("hStable").textContent = $("gStable").textContent; $("hStableSub").textContent = $("gStableSub").textContent;
   $("gStock").textContent = k ? fmtPct(k.apyMean30d) : "–";
   $("gStockSub").textContent = k ? `${k.symbol} on ${k.name}` : "None above $1M TVL";
 }
@@ -500,7 +580,7 @@ function renderStock(){
   const max = Math.max(...cards.map(c => c.apyMean30d), 1);
   $("stockGrid").innerHTML = cards.map(c => {
     const on10k = 10000 * (c.apyMean30d/100);
-    return `<article class="scard">
+    return `<article class="scard glass">
       <header><b>${esc(c.ticker)}</b><span>${c.n} pool${c.n > 1 ? "s" : ""} · best on ${esc(c.name)}</span></header>
       <div class="bars">
         <div class="bar"><span>At broker</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="v">0.00%</span></div>

@@ -7,3 +7,5 @@ Yield comparison for stock tokens and stablecoins on Robinhood Chain.
 - If data can't be loaded, clearly labelled sample data is shown instead.
 
 Run locally: open `index.html` in a browser, or `npx serve .`.
+
+Brand assets live in `assets/` (logo, favicon, share image) and `assets/brand/` (imagery, WebP).
