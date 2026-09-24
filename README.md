@@ -25,3 +25,5 @@ Alerts: a Telegram bot. `api/telegram.js` is its webhook, `api/check-alerts.js` 
 Run locally: `npx serve .` (pages use absolute paths, so opening the files directly won't load styles).
 
 Brand assets live in `assets/` (logo, favicon, share image) and `assets/brand/` (imagery, WebP).
+
+Sharing and search: `api/og.js` draws each main page's share preview (1200×630 PNG via `@vercel/og`) with live numbers, e.g. `/api/og?p=leaderboard`; pages point `og:image` at it (other pages keep `assets/og.jpg`). `sitemap.xml` and `robots.txt` list the pages for search engines.
