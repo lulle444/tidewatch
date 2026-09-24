@@ -12,7 +12,8 @@ async function firstPoint(id){
   const r = await fetch("https://yields.llama.fi/chart/" + id, {headers: {accept: "application/json"}, signal: AbortSignal.timeout(10000)});
   if (!r.ok) throw new Error("HTTP " + r.status);
   const j = await r.json(), t = (j.data || []).map(d => Date.parse(d.timestamp)).filter(isFinite);
-  return t.length ? Math.min(...t) : null;
+  // no history yet means DefiLlama only just started tracking the pool, so it's new today
+  return t.length ? Math.min(...t) : Date.now();
 }
 
 module.exports = async function handler(req, res){
