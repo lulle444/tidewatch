@@ -1,37 +1,66 @@
-// Temporary: checks which Robinhood Chain data sources a Vercel function can reach.
+// Temporary: measures stock-token swap activity on Robinhood Chain.
+const { currentStocks } = require("../lib/stocks");
 const RPC = "https://rpc.mainnet.chain.robinhood.com";
-const V3_SWAP = "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67";
-async function rpc(body) {
-  const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-  return r.json();
+const T = {
+  v3: "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67",
+  v4: "0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f",
+  v2: "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
+  init: "0xdd466e674ea557f56295e2d0218a125ea4b4f0f6f3307b95f85e6110838d6438",
+};
+let id = 0;
+async function rpc(method, params) {
+  const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }) });
+  const j = await r.json(); if (j.error) throw new Error(method + ": " + JSON.stringify(j.error)); return j.result;
 }
-async function tryit(fn) { const t = Date.now(); try { return { ok: true, ms: Date.now() - t, v: await fn() }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } }
-module.exports = async (req, res) => {
-  const pool = (req.query.pool || "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3");
-  const span = Number(req.query.span || 5000);
-  const out = {};
-  out.block = await tryit(async () => parseInt((await rpc({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] })).result, 16));
-  const n = out.block.v;
-  if (n) {
-    out.times = await tryit(async () => {
-      const r = await rpc([n, n - 100000].map((b, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getBlockByNumber", params: ["0x" + b.toString(16), false] })));
-      return r.map(x => x.result && parseInt(x.result.timestamp, 16));
-    });
-    out.logs = await tryit(async () => {
-      const r = await rpc({ jsonrpc: "2.0", id: 1, method: "eth_getLogs", params: [{ address: pool, topics: [V3_SWAP], fromBlock: "0x" + (n - span).toString(16), toBlock: "0x" + n.toString(16) }] });
-      if (r.error) return r.error;
-      const logs = r.result;
-      const hs = [...new Set(logs.slice(-8).map(l => l.transactionHash))];
-      const tx = await rpc(hs.map((h, i) => ({ jsonrpc: "2.0", id: i, method: "eth_getTransactionByHash", params: [h] })));
-      return { count: logs.length, sample: logs.slice(-2), txs: tx.map(t => t.result && { from: t.result.from, to: t.result.to }) };
-    });
-    out.bigLogs = await tryit(async () => {
-      const r = await rpc({ jsonrpc: "2.0", id: 1, method: "eth_getLogs", params: [{ topics: [V3_SWAP], fromBlock: "0x" + (n - span).toString(16), toBlock: "0x" + n.toString(16) }] });
-      return r.error || { count: r.result.length, pools: new Set(r.result.map(l => l.address)).size };
-    });
+async function batch(calls) {
+  const out = [];
+  for (let i = 0; i < calls.length; i += 100) {
+    const part = calls.slice(i, i + 100).map((c, k) => ({ jsonrpc: "2.0", id: k, method: c[0], params: c[1] }));
+    const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(part) });
+    const j = await r.json(); j.sort((a, b) => a.id - b.id); out.push(...j.map(x => x.result));
   }
-  out.blockscout = await tryit(async () => { const r = await fetch("https://robinhoodchain.blockscout.com/api/v2/stats"); return { status: r.status, body: (await r.text()).slice(0, 600) }; });
-  out.bsLogs = await tryit(async () => { const r = await fetch("https://robinhoodchain.blockscout.com/api/v2/addresses/" + pool + "/logs"); const t = await r.text(); return { status: r.status, body: t.slice(0, 900) }; });
+  return out;
+}
+const hex = n => "0x" + n.toString(16);
+const addrOf = w => "0x" + w.slice(-40);
+module.exports = async (req, res) => {
+  const t0 = Date.now(), out = {};
+  try {
+    const span = Math.min(Number(req.query.span || 3000), 20000);
+    const stocks = await currentStocks("https://tidewatch-olive.vercel.app");
+    const stockSet = new Set(stocks.map(s => s.address.toLowerCase()));
+    const n = parseInt(await rpc("eth_blockNumber", []), 16);
+    const range = { fromBlock: hex(n - span), toBlock: hex(n) };
+    const [v3, v4, v2] = await Promise.all([T.v3, T.v4, T.v2].map(t => rpc("eth_getLogs", [{ ...range, topics: [t] }])));
+    out.counts = { v3: v3.length, v4: v4.length, v2: v2.length, v4managers: [...new Set(v4.map(l => l.address))] };
+    const pools = [...new Set(v3.map(l => l.address))];
+    const toks = await batch(pools.flatMap(p => [["eth_call", [{ to: p, data: "0x0dfe1681" }, "latest"]], ["eth_call", [{ to: p, data: "0xd21220a7" }, "latest"]]]));
+    const stockPools = new Set();
+    pools.forEach((p, i) => { const a = toks[2 * i] && addrOf(toks[2 * i]), b = toks[2 * i + 1] && addrOf(toks[2 * i + 1]); if (stockSet.has(a) || stockSet.has(b)) stockPools.add(p); });
+    out.v3pools = { active: pools.length, stock: stockPools.size };
+    // v4 pool ids -> currencies via Initialize logs
+    const ids = [...new Set(v4.map(l => l.topics[1]))];
+    out.v4ids = ids.length;
+    let v4stock = new Set();
+    try {
+      const mgr = v4[0] && v4[0].address;
+      const inits = await rpc("eth_getLogs", [{ address: mgr, fromBlock: "0x0", toBlock: hex(n), topics: [T.init, ids.slice(0, 50)] }]);
+      inits.forEach(l => { if (stockSet.has(addrOf(l.topics[2])) || stockSet.has(addrOf(l.topics[3]))) v4stock.add(l.topics[1]); });
+      out.v4init = { found: inits.length, stock: v4stock.size };
+    } catch (e) { out.v4init = String(e).slice(0, 300); }
+    const swaps = v3.filter(l => stockPools.has(l.address)).concat(v4.filter(l => v4stock.has(l.topics[1])));
+    const hashes = [...new Set(swaps.map(l => l.transactionHash))];
+    out.stockSwaps = { swaps: swaps.length, txs: hashes.length };
+    const txs = await batch(hashes.slice(0, 1500).map(h => ["eth_getTransactionByHash", [h]]));
+    const byTo = {};
+    txs.forEach(t => { if (!t) return; const k = t.to; (byTo[k] = byTo[k] || { n: 0, from: new Set() }).n++; byTo[k].from.add(t.from); });
+    out.targets = Object.entries(byTo).map(([to, v]) => ({ to, txs: v.n, senders: v.from.size })).sort((a, b) => b.txs - a.txs).slice(0, 25);
+    out.distinctSenders = new Set(txs.filter(Boolean).map(t => t.from)).size;
+    out.minutes = null;
+    const bt = await batch([["eth_getBlockByNumber", [hex(n - span), false]], ["eth_getBlockByNumber", [hex(n), false]]]);
+    out.minutes = (parseInt(bt[1].timestamp, 16) - parseInt(bt[0].timestamp, 16)) / 60;
+  } catch (e) { out.error = String(e).slice(0, 500); }
+  out.ms = Date.now() - t0;
   res.setHeader("cache-control", "no-store");
   res.json(out);
 };
