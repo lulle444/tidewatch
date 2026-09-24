@@ -10,4 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - run: curl -fsS --max-time 290 https://tidewatch-olive.vercel.app/api/lb-index
+      # prints the response either way, and fails the job when the indexer reports an error
+      - run: |
+          code=$(curl -sS --max-time 290 -o out.json -w "%{http_code}" https://tidewatch-olive.vercel.app/api/lb-index)
+          cat out.json; echo
+          test "$code" = 200
