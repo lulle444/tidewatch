@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stock tracker · Tidewatch</title>
+<meta name="description" content="Robinhood Chain stock tokens, their on-chain price next to the real share price, live.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/stocks">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta property="og:title" content="Stock tracker · Tidewatch">
+<meta property="og:description" content="Robinhood Chain stock tokens, their on-chain price next to the real share price, live.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/stocks">
+<meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@usetidewatch">
+<meta name="theme-color" content="#EDF3F8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<canvas id="tide" aria-hidden="true"></canvas>
+<div class="wrap">
+  <nav class="nav glass" aria-label="Main">
+    <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
+    <div class="navlinks">
+      <a href="/yields">Yields</a>
+      <a href="/calculator">Calculator</a>
+      <a href="/stock-yield">Stock yield</a>
+      <a href="/stocks" aria-current="page">Stock tracker</a>
+      <a href="/risk">Risk score</a>
+      <a href="/learn">Learn</a>
+    </div>
+    <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
+  </nav>
+  <div class="mobilenav" aria-label="Sections">
+    <a href="/yields">Yields</a>
+    <a href="/calculator">Calculator</a>
+    <a href="/stock-yield">Stock yield</a>
+    <a href="/stocks" aria-current="page">Stock tracker</a>
+    <a href="/risk">Risk score</a>
+    <a href="/learn">Learn</a>
+  </div>
+
+  <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
+
+  <header class="pagehead">
+    <div>
+      <p class="eyebrow">Stock tracker</p>
+      <h1>Is your stock token priced fairly?</h1>
+      <p class="lede">Every Robinhood Chain stock token, with its on-chain price next to the real share price. See where tokens trade at a premium or a discount, and how deep the market behind them is.</p>
+    </div>
+  </header>
+
+  <section class="gauge glass" aria-label="Key figures">
+    <div><small>Stock tokens</small><strong id="sTokens">–</strong><span id="sTokensSub">&nbsp;</span></div>
+    <div><small>Tokenized value</small><strong id="sTokenized">–</strong><span id="sTokenizedSub">&nbsp;</span></div>
+    <div><small>Traded on chain, 24h</small><strong id="sVolume">–</strong><span id="sVolumeSub">&nbsp;</span></div>
+    <div><small>Fairly priced</small><strong id="sFair">–</strong><span id="sFairSub">&nbsp;</span></div>
+  </section>
+
+  <section class="tablepanel glass" aria-labelledby="trackH">
+    <div class="sectionhead">
+      <div><h2 id="trackH">Share price vs. on-chain price</h2><p class="mkt" id="mkt">Checking market hours…</p></div>
+    </div>
+    <div class="controls">
+      <div class="chips" role="group" aria-label="Price gap">
+        <button class="chip" data-view="all" aria-pressed="true">All</button>
+        <button class="chip" data-view="discount" aria-pressed="false">Discount</button>
+        <button class="chip" data-view="premium" aria-pressed="false">Premium</button>
+        <button class="chip" data-view="fair" aria-pressed="false">Fair</button>
+      </div>
+      <label class="field" for="minLiq">Pool depth
+        <select id="minLiq">
+          <option value="0">All</option>
+          <option value="10000" selected>$10k+</option>
+          <option value="100000">$100k+</option>
+          <option value="1000000">$1M+</option>
+        </select>
+      </label>
+      <span class="grow"></span>
+      <input type="search" id="q" placeholder="Search ticker or company" aria-label="Search ticker or company">
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr>
+          <th><button data-sort="symbol">Stock</button></th>
+          <th class="r"><button data-sort="gap">Gap</button></th>
+          <th class="r"><button data-sort="ref">Share price</button></th>
+          <th class="r"><button data-sort="onchain">On chain</button></th>
+          <th class="r"><button data-sort="liquidity">Pool depth</button></th>
+          <th class="r"><button data-sort="volume24h">24h volume</button></th>
+          <th class="r"><span class="visually-hidden">Pool link</span></th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="7" class="empty">Loading stock tokens…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="more"><span id="count"></span><button class="btn ghost small" id="showMore" hidden>Show more</button></div>
+  </section>
+
+  <div class="twocol block-sm">
+    <div class="glass note-card">
+      <p class="eyebrow">Why prices drift</p>
+      <h3>Arbitrage keeps them close, most of the time</h3>
+      <p>Robinhood mints and redeems stock tokens at the real share price, so when a token drifts far from it, traders can profit by closing the gap. Small gaps remain because of trading fees, pool depth and how fast traders react.</p>
+      <p>When the US market is closed for the weekend, share prices freeze but tokens keep trading. A gap then shows where traders expect the stock to open, not necessarily a bargain.</p>
+    </div>
+    <div class="glass note-card">
+      <p class="eyebrow">How we calculate</p>
+      <h3>Two prices, one gap</h3>
+      <p><b>Share price</b> is the midpoint of Robinhood’s live bid and ask for one token, adjusted for dividends and splits. <b>On chain</b> is the price in the token’s deepest pool, as indexed by DexScreener.</p>
+      <p><b>Gap</b> is the on-chain price divided by the share price, minus one. Within ±0.5% counts as fair. Pools under $10k are marked thin, because a single small trade can move them.</p>
+    </div>
+  </div>
+
+  <div class="nextsteps">
+    <a class="glass" href="/stock-yield"><p class="eyebrow">Next step</p><h3>Earn on your stock tokens →</h3><p>See what lending or providing liquidity pays on top of holding the share.</p></a>
+    <a class="glass" href="/about#disclaimer"><p class="eyebrow">Good to know</p><h3>Not financial advice →</h3><p>Prices come from third parties and can be delayed or wrong. Always check before you trade.</p></a>
+  </div>
+
+  <footer class="sitefoot">
+    <div class="footgrid">
+      <div class="footbrand">
+        <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="26" height="26"><span class="word">TIDE<b>WATCH</b></span></a>
+        <p>Independent yield comparison for Robinhood Chain. Live on-chain data, a transparent risk score and no paid placements.</p>
+        <a class="social" href="https://x.com/usetidewatch" target="_blank" rel="noopener me" aria-label="Tidewatch on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@usetidewatch</a>
+      </div>
+      <nav aria-label="Product"><h4>Product</h4><a href="/yields">Yields</a><a href="/calculator">Calculator</a><a href="/stock-yield">Stock yield</a><a href="/stocks">Stock tracker</a><a href="/risk">Risk score</a><a href="https://t.me/Usetidewatch_bot" target="_blank" rel="noopener">Telegram alerts</a></nav>
+      <nav aria-label="Learn"><h4>Learn</h4><a href="/learn">Yield guide</a><a href="/learn#checklist">Before you deposit</a><a href="/#faq">FAQ</a></nav>
+      <nav aria-label="Company"><h4>Company</h4><a href="/about">About</a><a href="/about#disclaimer">Disclaimer</a><a href="https://x.com/usetidewatch" target="_blank" rel="noopener">X / Twitter</a></nav>
+    </div>
+    <div class="footbase">
+      <span>© 2026 Tidewatch. Not financial advice. Yields are variable and can turn negative.</span>
+      <span id="updated"></span>
+    </div>
+  </footer>
+</div>
+<script src="/stocks.js"></script>
+<script src="/tide.js"></script>
+</body>
+</html>
