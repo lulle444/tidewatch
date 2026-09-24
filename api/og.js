@@ -118,23 +118,8 @@ function card(c, logo){
       h({}, "tidewatch-olive.vercel.app" + c.path), h({}, "Live on-chain data · Not financial advice")));
 }
 
-// Temporary: renders every card and reports size and timing (reached via the /og-check rewrite).
-async function check(res){
-  const out = {};
-  for (const p of Object.keys(CARDS)) {
-    const t = Date.now();
-    const r = {h: {}, setHeader(k, v) { this.h[k] = v; }, status(c) { this.c = c; return this; }, end(b) { this.b = b; }, redirect(c, u) { this.c = c; this.loc = u; }};
-    await module.exports({query: {p}}, r);
-    out[p] = {status: r.c, type: r.h["Content-Type"] || null, bytes: r.b ? r.b.length : 0, redirect: r.loc || null, ms: Date.now() - t};
-  }
-  out.fonts = (fonts || []).map(f => f.name + " " + f.weight);
-  res.setHeader("Cache-Control", "no-store");
-  res.status(200).json(out);
-}
-
 module.exports = async function handler(req, res){
   const p = String((req.query || {}).p || "home");
-  if (p === "check") return check(res);
   const fallback = () => { res.setHeader("Cache-Control", "public, s-maxage=600"); res.redirect(302, "/assets/og.jpg"); };
   if (!CARDS[p]) return fallback();
   try {

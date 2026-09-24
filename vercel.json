@@ -18,11 +18,5 @@
     "api/og.js": {
       "includeFiles": "assets/logo-mark.png"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/og-check",
-      "destination": "/api/og?p=check"
-    }
-  ]
+  }
 }
