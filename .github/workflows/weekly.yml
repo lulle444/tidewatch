@@ -1,0 +1,13 @@
+name: Weekly recap
+# Monday 08:00 UTC: sends the weekly recap to everyone who turned on /weekly in the Telegram bot.
+# The endpoint sends at most once a week, so a retry or a manual run never double-posts.
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: curl -fsS --max-time 90 "https://tidewatch-olive.vercel.app/api/weekly?send=1"

@@ -11,6 +11,7 @@ module.exports = async function handler(req, res){
       {command: "list", description: "See or remove your alerts"},
       {command: "gap", description: "Stock token price-gap alert, e.g. /gap TSLA 1"},
       {command: "new", description: "Get told about new pools"},
+      {command: "weekly", description: "Monday recap of the week, ready to share"},
       {command: "stop", description: "Remove all alerts"},
       {command: "start", description: "How Tidewatch alerts work"},
     ]});

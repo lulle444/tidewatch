@@ -51,6 +51,7 @@ module.exports = async function handler(req, res){
     const known = new Set(knownCount ? await redis("SMEMBERS", A.K.known) : []);
     const fresh = data.filter(p => !known.has(p.pool));
     if (fresh.length) writes.push(["SADD", A.K.known, ...fresh.map(p => p.pool)]);
+    if (fresh.length && knownCount) writes.push(["ZADD", A.K.newlog, ...fresh.flatMap(p => [Date.now(), p.pool])]);   // for the weekly recap
     const announce = knownCount ? fresh.filter(p => p.tvlUsd >= NEW_POOL_MIN_TVL && A.apyOf(p) > 0) : [];
     if (announce.length){
       const subs = await redis("SMEMBERS", A.K.newpools) || [];

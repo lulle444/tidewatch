@@ -73,21 +73,29 @@ async function createGap(chat, sym, thr){
     `${!(st.liquidity >= THIN) ? `\n\nNote: its deepest pool holds under $10k, so a single small trade can swing the price. I’ll only alert once the pool is deeper.` : ""}\n\nSee all your alerts with /list.`);
 }
 
+async function weekly(chat, on){
+  await redis(on ? "SADD" : "SREM", A.K.weekly, String(chat));
+  return send(chat, on
+    ? "Weekly recap is on. Every Monday morning you’ll get the week on Robinhood Chain: best yields, biggest movers and stock-token pricing, with a button to share it on X. Send /weekly again to turn it off."
+    : "Weekly recap is off.");
+}
+
 async function list(chat){
-  const [alerts, np] = await Promise.all([A.listAlerts(chat), redis("SISMEMBER", A.K.newpools, String(chat))]);
+  const [alerts, np, wk] = await Promise.all([A.listAlerts(chat), redis("SISMEMBER", A.K.newpools, String(chat)), redis("SISMEMBER", A.K.weekly, String(chat))]);
   const lines = alerts.map((a, i) => a.kind === "gap"
     ? `${i + 1}. ${esc(a.symbol)} price gap beyond ±${A.pct(a.thr)}`
     : `${i + 1}. ${esc(a.symbol)} (${esc(a.project)}) ${a.dir === "above" ? "above" : "below"} ${A.pct(a.thr)}`);
   const rows = alerts.map((a, i) => [{text: `Remove ${i + 1}`, callback_data: `d|${a.id}`}]);
   rows.push([np ? {text: "Stop new-pool alerts", callback_data: "n|off"} : {text: "🆕 Alert me about new pools", callback_data: "n|on"}]);
+  rows.push([wk ? {text: "Stop weekly recap", callback_data: "w|off"} : {text: "📰 Weekly recap", callback_data: "w|on"}]);
   return send(chat, (lines.length ? "<b>Your alerts</b>\n" + lines.join("\n") : "You have no alerts yet. Tap 🔔 next to any pool on " + A.SITE + "/yields or any stock token on " + A.SITE + "/stocks") +
-    `\n\nNew-pool alerts: <b>${np ? "on" : "off"}</b>`, {reply_markup: {inline_keyboard: rows}});
+    `\n\nNew-pool alerts: <b>${np ? "on" : "off"}</b> · Weekly recap: <b>${wk ? "on" : "off"}</b>`, {reply_markup: {inline_keyboard: rows}});
 }
 
 const WELCOME = `<b>Tidewatch alerts</b> for Robinhood Chain.\n\n` +
   `• Tap 🔔 next to a pool on ${A.SITE}/yields to get pinged when its APY crosses a level.\n` +
   `• Tap 🔔 next to a stock token on ${A.SITE}/stocks, or send <code>/gap TSLA 1</code>, to hear when it trades away from its share price.\n` +
-  `• /new to hear about new pools on the chain.\n• /list to see or remove your alerts.\n• /stop to remove everything.\n\n` +
+  `• /new to hear about new pools on the chain.\n• /weekly for a Monday recap you can share on X.\n• /list to see or remove your alerts.\n• /stop to remove everything.\n\n` +
   `Checked every 15 minutes. Not financial advice.`;
 
 async function onMessage(m){
@@ -112,9 +120,10 @@ async function onMessage(m){
     if (!sym) return send(chat, "Tell me which token, like <code>/gap TSLA 1</code>, or tap 🔔 next to one on " + A.SITE + "/stocks");
     return createGap(chat, sym, num(args[0]));
   }
+  if (c === "/weekly") return weekly(chat, !(await redis("SISMEMBER", A.K.weekly, String(chat))));
   if (c === "/list") return list(chat);
   if (c === "/new"){ await redis("SADD", A.K.newpools, String(chat)); return send(chat, "New-pool alerts are on. I’ll tell you when a pool with at least $100k TVL appears on Robinhood Chain."); }
-  if (c === "/stop"){ const n = await A.removeAll(chat); return send(chat, `Removed ${n} alert${n === 1 ? "" : "s"} and turned off new-pool alerts.`); }
+  if (c === "/stop"){ const n = await A.removeAll(chat); return send(chat, `Removed ${n} alert${n === 1 ? "" : "s"} and turned off new-pool alerts and the weekly recap.`); }
   return send(chat, WELCOME);
 }
 
@@ -124,6 +133,7 @@ async function onCallback(q){
   if (!chat) return;
   if (kind === "s" && UUID.test(b)) return create(chat, b, a === "a" ? "above" : "below", round1(parseFloat(cthr)));
   if (kind === "g" && SYM.test(a)) return createGap(chat, a, parseFloat(b));
+  if (kind === "w") return weekly(chat, a === "on");
   if (kind === "d"){ await A.removeAlert(chat, a); return list(chat); }
   if (kind === "n"){
     await redis(a === "on" ? "SADD" : "SREM", A.K.newpools, String(chat));
