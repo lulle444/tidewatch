@@ -1,5 +1,6 @@
 // Temporary: measures stock-token swap activity on Robinhood Chain.
 const { currentStocks } = require("../lib/stocks");
+const { redis } = require("../lib/store");
 const RPC = "https://rpc.mainnet.chain.robinhood.com";
 const T = {
   v3: "0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67",
@@ -31,7 +32,7 @@ module.exports = async (req, res) => {
   const t0 = Date.now(), out = {};
   try {
     SIZE = Number(req.query.b || 20); stats.retries = 0;
-    const span = Math.min(Number(req.query.span || 3000), 20000);
+    const span = Math.min(Number(req.query.span || 1200), 20000);
     const stocks = await currentStocks("https://tidewatch-olive.vercel.app");
     const stockSet = new Set(stocks.map(s => s.address.toLowerCase()));
     const n = parseInt(await rpc("eth_blockNumber", []), 16);
@@ -56,7 +57,7 @@ module.exports = async (req, res) => {
     const swaps = v3.filter(l => stockPools.has(l.address)).concat(v4.filter(l => v4stock.has(l.topics[1])));
     const hashes = [...new Set(swaps.map(l => l.transactionHash))];
     out.stockSwaps = { swaps: swaps.length, txs: hashes.length };
-    const txs = await batch(hashes.slice(0, 1500).map(h => ["eth_getTransactionByHash", [h]]));
+    const txs = await batch(hashes.slice(0, 300).map(h => ["eth_getTransactionByHash", [h]]));
     const byTo = {};
     txs.forEach(t => { if (!t) return; const k = t.to; (byTo[k] = byTo[k] || { n: 0, from: new Set() }).n++; byTo[k].from.add(t.from); });
     out.targets = Object.entries(byTo).map(([to, v]) => ({ to, txs: v.n, senders: v.from.size })).sort((a, b) => b.txs - a.txs).slice(0, 25);
@@ -66,6 +67,7 @@ module.exports = async (req, res) => {
     out.minutes = (parseInt(bt[1].timestamp, 16) - parseInt(bt[0].timestamp, 16)) / 60;
   } catch (e) { out.error = String(e).slice(0, 500); }
   out.ms = Date.now() - t0; out.retries = stats.retries;
+  if (req.query.read === undefined) await redis("SET", "tw:probe", JSON.stringify(out), "EX", 86400).catch(() => {});
   res.setHeader("cache-control", "no-store");
   res.json(out);
 };
