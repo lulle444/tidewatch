@@ -12,7 +12,10 @@ const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BR
   "ARM SMCI MU ASML TSM CRWD PANW NET DDOG ZM SNAP PINS DKNG CVX GS MS BAC WFC C SCHW BLK SPY QQQ VOO VTI IWM DIA GLD SLV TLT ARKK RDDT SNDK USO SGOV USAR").split(" "));
 
 const PAGE_LIMIT = +document.body.dataset.limit || 25;
-const state = {pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", hideOdd:true, sort:"apy", dir:-1, limit:PAGE_LIMIT, sample:false};
+const HIST_API = "/api/pool-history?pool=", HIST_LLAMA = "https://yields.llama.fi/chart/";
+const RANGES = {"30d": 30 * 864e5, "90d": 90 * 864e5, "All": Infinity};
+const poolHistory = new Map();   // pool id -> [[time ms, APY, base APY, reward APY, TVL], ...]
+const state = {open:null, range:"30d", pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", hideOdd:true, sort:"apy", dir:-1, limit:PAGE_LIMIT, sample:false};
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -184,16 +187,19 @@ function renderTable(){
     const delta = (d != null && isFinite(d) && Math.abs(d) >= 0.01) ? `<span class="apy-split delta ${d>0?"up":"down"}">${d>0?"+":""}${d.toFixed(2)} pp 7d</span>` : "";
     const tag = p.kind === "stock" ? '<span class="tag stock">Stock</span>' : p.kind === "stable" ? '<span class="tag">Stable</span>' : "";
     const why = `Audit: ${p.audited ? "yes" : "no"} · Age: ${p.ageDays ? Math.round(p.ageDays) + " days" : "unknown"} · IL: ${p.ilRisk === "yes" ? "yes" : "no"}`;
-    return `<tr>
+    const canOpen = !state.sample && UUID_RE.test(p.id || ""), open = canOpen && state.open === p.id;
+    const asset = `<span class="asset">${esc(p.symbol)}</span>${tag}`;
+    return `<tr${canOpen ? ` class="srow${open ? " is-open" : ""}" data-id="${esc(p.id)}"` : ""}>
       <td><div class="proto"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a><span>${esc(p.category || "")}${p.meta ? " · " + esc(p.meta) : ""}</span></div></td>
-      <td><div class="assetcell"><span class="asset">${esc(p.symbol)}</span>${tag}</div></td>
+      <td>${canOpen ? `<button class="ticker assetcell" type="button" aria-expanded="${open}" aria-label="${esc(p.symbol)} on ${esc(p.name)}: show APY history">${asset}<span class="chev" aria-hidden="true">›</span></button>` : `<div class="assetcell">${asset}</div>`}</td>
       <td class="r">${p.outlier ? '<span class="tag odd" title="DefiLlama flags this APY as unusual compared with its own history. Often short-lived reward tokens in a thin pool.">Unusual</span> ' : ""}<span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
       <td class="r num">${fmtPct(p.apyMean30d)}</td>
       <td class="r num">${fmtUsd(p.tvlUsd)}</td>
       <td><div class="riskcell"><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span>${bell(p)}</div></td>
-    </tr>`;
+    </tr>${open ? detailRow(p) : ""}`;
   }).join("") : `<tr><td colspan="6" class="empty">No pools match these filters. Try a lower min. TVL or more risk levels.</td></tr>`;
   set("count", `Showing ${shown.length} of ${rows.length} pools`);
+  if (state.open && shown.some(p => p.id === state.open)) drawPoolChart();
   if ($("showMore")) $("showMore").hidden = rows.length <= state.limit;
   document.querySelectorAll("th button").forEach(b => {
     const on = b.dataset.sort === state.sort;
@@ -277,6 +283,57 @@ function renderStock(){
   }).join("");
 }
 
+/* ---------- APY history chart (daily readings from DefiLlama) ---------- */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function detailRow(p){
+  const chips = Object.keys(RANGES).map(k => `<button class="chip" type="button" data-range="${k}" aria-pressed="${k === state.range}">${k}</button>`).join("");
+  return `<tr class="detail"><td colspan="6"><div class="gapchart" id="gapchart">
+    <div class="gchead">
+      <div><h3>${esc(p.symbol)} on ${esc(p.name)}: APY history</h3><p id="gcstats">Daily readings from DefiLlama.</p></div>
+      <div class="gctools"><div class="chips" role="group" aria-label="Time range">${chips}</div>${bell(p).replace('class="bell"', 'class="btn ghost small bellbtn"').replace("</svg></a>", "</svg> Alert me</a>")}</div>
+    </div>
+    <div class="gclegend" id="gclegend" hidden><span><i class="key"></i>Total APY</span><span><i class="key base"></i>Base APY, without reward tokens</span></div>
+    <div class="gcplot" id="gcplot"><p class="muted">Loading history…</p></div>
+  </div></td></tr>`;
+}
+
+async function loadPoolHistory(id){
+  if (poolHistory.has(id)) return poolHistory.get(id);
+  let pts = null;
+  try { const j = await fetchJson(HIST_API + id); pts = j.points; } catch (e) {}
+  if (!pts) try {   // DefiLlama directly if our endpoint isn't reachable
+    const j = await fetchJson(HIST_LLAMA + id);
+    pts = (j.data || []).map(d => [Date.parse(d.timestamp), d.apy, d.apyBase, d.apyReward, d.tvlUsd]).filter(q => isFinite(q[0]) && q[1] != null);
+  } catch (e) {}
+  if (pts) poolHistory.set(id, pts);
+  return pts || [];
+}
+
+async function drawPoolChart(){
+  const id = state.open, p = state.pools.find(x => x.id === id), box = $("gcplot");
+  if (!p || !box) return;
+  const tb = box.closest(".tablebox"); $("gapchart").style.width = Math.max(260, tb.clientWidth - 2) + "px";
+  const all = await loadPoolHistory(id);
+  if (state.open !== id || !$("gcplot")) return;
+  const from = Date.now() - RANGES[state.range], pts = all.filter(q => q[0] >= from);
+  const hasRewards = pts.some(q => q[3] > 0);
+  $("gclegend").hidden = !hasRewards;
+  if (pts.length){
+    const apys = pts.map(q => q[1]), avg = apys.reduce((a, b) => a + b, 0) / apys.length;
+    const tA = pts[0][4], tB = pts[pts.length - 1][4], since = new Date(pts[0][0]).toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"});
+    set("gcstats", `Since ${since}: APY ranged ${fmtPct(Math.min(...apys))} to ${fmtPct(Math.max(...apys))}, averaging ${fmtPct(avg)}. ` +
+      (tA > 0 && tB > 0 ? `TVL went from ${fmtUsd(tA)} to ${fmtUsd(tB)}.` : "") + " Daily readings from DefiLlama.");
+  } else set("gcstats", "DefiLlama has no history for this pool yet.");
+  const series = [{name: "total APY", pts: pts.map(q => [q[0], q[1]])}];
+  if (hasRewards) series.push({name: "base APY", cls: "base", pts: pts.map(q => [q[0], q[2] ?? 0])});
+  TWChart.draw(box, {
+    series, fmt: fmtPct, axisFmt: v => (Math.round(v * 100) / 100) + "%", floor: 0, include: [0], daily: true, breakMs: 3 * 864e5,
+    extra: i => pts[i][4] ? `TVL ${fmtUsd(pts[i][4])}` : "",
+    label: `${p.symbol} on ${p.name}, APY over ${state.range === "All" ? "all time" : "the last " + state.range}.`,
+  });
+}
+
 function renderAll(){
   renderGauge();
   if ($("rows")) renderTable();
@@ -324,10 +381,24 @@ function alertDialog(id, label){
   d.showModal();
 }
 $("rows")?.addEventListener("click", e => {
-  const a = e.target.closest(".bell");
+  const rg = e.target.closest("[data-range]");
+  if (rg){
+    state.range = rg.dataset.range;
+    document.querySelectorAll("[data-range]").forEach(x => x.setAttribute("aria-pressed", x === rg ? "true" : "false"));
+    drawPoolChart(); return;
+  }
+  const tr = e.target.closest("tr.srow");
+  if (tr && !e.target.closest("a")){
+    state.open = state.open === tr.dataset.id ? null : tr.dataset.id;
+    renderTable();
+    if (state.open) $("rows").querySelector(`tr.srow[data-id="${CSS.escape(state.open)}"] .ticker`)?.focus();
+    return;
+  }
+  const a = e.target.closest(".bell, .bellbtn");
   if (!a || matchMedia("(pointer: coarse)").matches || typeof HTMLDialogElement !== "function") return;
   e.preventDefault(); alertDialog(a.dataset.pool, a.dataset.label);
 });
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.open && $("gcplot")) drawPoolChart(); }, 150); });
 document.querySelectorAll("th button").forEach(b => b.addEventListener("click", () => {
   const k = b.dataset.sort;
   if (state.sort === k) state.dir = -state.dir; else { state.sort = k; state.dir = (k === "name" || k === "symbol") ? 1 : -1; }

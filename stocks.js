@@ -170,12 +170,6 @@ async function loadHistory(sym){
   return pts;
 }
 
-function niceStep(span){
-  for (const s of [0.001, 0.0025, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]) if (span / s <= 5) return s;
-  return 1;
-}
-const fmtTime = (t, span) => new Date(t).toLocaleString("en-US", span > 2 * 864e5 ? {month:"short", day:"numeric"} : {hour:"2-digit", minute:"2-digit"});
-const fmtWhen = t => new Date(t).toLocaleString("en-US", {weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
 
 async function drawChart(){
   const sym = state.open, row = state.rows.find(r => r.symbol === sym), box = $("gcplot"), note = $("gcnote");
@@ -191,56 +185,16 @@ async function drawChart(){
   const first = saved.length ? saved[0][0] : null;
   note.textContent = !saved.length
     ? (row.liquidity >= THIN ? "History starts today: we save one reading an hour while the US market is open, so this chart fills in over the coming days." : "This token’s deepest pool is under $10k, so we don’t chart it. Thin pools swing on single trades.")
-    : first > from ? `History starts ${fmtWhen(first)}.` : "";
-  if (!pts.length){ box.innerHTML = `<p class="muted">No readings in this range yet.</p>`; return; }
-
-  const W = box.clientWidth, H = 220, L = 52, R = 16, T = 12, B = 26;
-  const t0 = Math.min(pts[0][0], now - RANGES[state.range] * (pts.length > 1 ? 0 : 1)), t1 = now;
-  const gaps = pts.map(p => p[1]);
-  let lo = Math.min(-0.01, ...gaps.map(g => g * 1.15)), hi = Math.max(0.01, ...gaps.map(g => g * 1.15));
-  const step = niceStep(hi - lo); lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
-  const x = t => L + (t - t0) / Math.max(1, t1 - t0) * (W - L - R), y = g => T + (hi - g) / (hi - lo) * (H - T - B);
-  const ticks = []; for (let v = lo; v <= hi + 1e-9; v += step) ticks.push(v);
-  const nx = W < 480 ? 3 : 4, xt = Array.from({length: nx}, (_, i) => t0 + (t1 - t0) * (i + 0.5) / nx);
-  // break the line where readings are more than 3 hours apart (market closed, missed runs)
-  const segs = []; let cur = [];
-  pts.forEach((p, i) => { if (i && p[0] - pts[i - 1][0] > 3 * 36e5){ segs.push(cur); cur = []; } cur.push(p); }); segs.push(cur);
-  const path = segs.map(sg => sg.map((p, i) => `${i ? "L" : "M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join("")).join("");
-  const lone = segs.filter(sg => sg.length === 1).map(sg => sg[0]);
-  const last = pts[pts.length - 1];
-  box.innerHTML = `<svg class="gcsvg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="${esc(sym)} price gap over the last ${state.range}. Latest ${fmtGap(last[1])}. Use the arrow keys to read values.">
-      <rect class="fairband" x="${L}" y="${y(FAIR)}" width="${W - L - R}" height="${y(-FAIR) - y(FAIR)}"/>
-      <text class="fairlbl" x="${W - R - 6}" y="${y(FAIR) + 12}" text-anchor="end">Fair ±0.5%</text>
-      ${ticks.map(v => `<line class="${Math.abs(v) < 1e-9 ? "zero" : "grid"}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ylbl" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${fmtGap(v).replace(".00%", "%")}</text>`).join("")}
-      ${xt.map(t => `<text class="xlbl" x="${x(t)}" y="${H - 6}" text-anchor="middle">${esc(fmtTime(t, t1 - t0))}</text>`).join("")}
-      <path class="gline" d="${path}"/>
-      ${lone.map(p => `<circle class="gdot" cx="${x(p[0])}" cy="${y(p[1])}" r="4"/>`).join("")}
-      <circle class="gdot end" cx="${x(last[0])}" cy="${y(last[1])}" r="4"/>
-      <line class="xhair" id="xhair" y1="${T}" y2="${H - B}" hidden/><circle class="gdot hov" id="hovdot" r="5" hidden/>
-    </svg><div class="gctip" id="gctip" hidden></div>`;
-  const svg = box.querySelector("svg"), tip = $("gctip"), xh = $("xhair"), hd = $("hovdot");
-  let idx = pts.length - 1;
-  const show = i => {
-    idx = Math.max(0, Math.min(pts.length - 1, i)); const p = pts[idx], px = x(p[0]), py = y(p[1]);
-    xh.setAttribute("x1", px); xh.setAttribute("x2", px); hd.setAttribute("cx", px); hd.setAttribute("cy", py);
-    xh.hidden = hd.hidden = tip.hidden = false;
-    const band = p[1] > FAIR ? "premium" : p[1] < -FAIR ? "discount" : "fair";
-    tip.innerHTML = `<b class="num"></b> <span class="tb"></span><small></small><small class="num"></small>`;
-    tip.children[0].textContent = fmtGap(p[1]); tip.children[1].textContent = band;
-    tip.children[2].textContent = idx === pts.length - 1 && now - p[0] < 10 * 60000 ? "Now" : fmtWhen(p[0]);
-    tip.children[3].textContent = `On chain ${fmtPrice(p[3])} · Share ${fmtPrice(p[2])}`;
-    const tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(W - tw, px - tw / 2)) + "px"; tip.style.top = Math.max(0, py - tip.offsetHeight - 14) + "px";
-  };
-  const hide = () => { xh.hidden = hd.hidden = tip.hidden = true; };
-  svg.addEventListener("pointermove", e => {
-    const bx = svg.getBoundingClientRect().left, t = t0 + (e.clientX - bx - L) / (W - L - R) * (t1 - t0);
-    let best = 0; pts.forEach((p, i) => { if (Math.abs(p[0] - t) < Math.abs(pts[best][0] - t)) best = i; }); show(best);
-  });
-  svg.addEventListener("pointerleave", hide);
-  svg.addEventListener("focus", () => show(idx)); svg.addEventListener("blur", hide);
-  svg.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight"){ e.preventDefault(); show(idx + (e.key === "ArrowLeft" ? -1 : 1)); }
-    else if (e.key === "Home" || e.key === "End"){ e.preventDefault(); show(e.key === "Home" ? 0 : pts.length - 1); }
+    : first > from ? `History starts ${TWChart.fmtWhen(first)}.` : "";
+  const live = pts.length && now - pts[pts.length - 1][0] < 10 * 60000;
+  TWChart.draw(box, {
+    series: [{name: "", tipName: p => p[1] > FAIR ? "premium" : p[1] < -FAIR ? "discount" : "fair", pts}],
+    t0: pts.length > 1 ? pts[0][0] : from, t1: now,
+    fmt: fmtGap, axisFmt: v => fmtGap(v).replace(".00%", "%"),
+    include: [-0.01, 0.01], zero: true, band: {lo: -FAIR, hi: FAIR, label: "Fair ±0.5%"}, breakMs: 3 * 36e5,
+    whenText: i => i === pts.length - 1 && live ? "Now" : TWChart.fmtWhen(pts[i][0]),
+    extra: i => `On chain ${fmtPrice(pts[i][3])} · Share ${fmtPrice(pts[i][2])}`,
+    label: `${sym} price gap over the last ${state.range}.`,
   });
 }
 
