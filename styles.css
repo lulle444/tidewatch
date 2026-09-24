@@ -47,6 +47,7 @@ section{scroll-margin-top:90px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
 .dot.live{background:#27A36B;box-shadow:0 0 0 4px rgba(39,163,107,.18)}
 .dot.sample{background:#D99A1E;box-shadow:0 0 0 4px rgba(217,154,30,.2)}
+@media (max-width:1180px){.navlinks a{padding:9px 8px}}
 @media (max-width:1000px){.navlinks{display:none}}
 @media (max-width:460px){.logo .word{display:none}}
 
@@ -392,3 +393,22 @@ tr.detail:hover{background:transparent}
 .protocard .btn{align-self:flex-start}
 td.seen{white-space:nowrap}
 @media (max-width:760px){.windowbar{margin-top:-56px}}
+
+/* leaderboard */
+.walletdot{width:26px;height:26px;border-radius:50%;flex:none;background:conic-gradient(from 40deg, hsl(var(--h) 55% 58%), hsl(calc(var(--h) + 70) 55% 70%), hsl(var(--h) 55% 58%))}
+button.wallet .asset{font-size:13.5px}
+button.wallet .tag{margin-left:8px}
+.lbstocks{display:flex;gap:6px;flex-wrap:nowrap}
+.lbstock{display:inline-flex;align-items:center;gap:6px;font:500 12.5px/1 var(--body);padding:4px 8px 4px 4px;border-radius:999px;background:var(--surface-2);white-space:nowrap}
+.lbstock img{width:18px;height:18px;border-radius:50%;object-fit:cover}
+.lbdetail{position:sticky;left:0;padding:14px 18px 12px;box-sizing:border-box}
+.lbsub{width:100%;min-width:0;border-collapse:collapse;font-size:13.5px}
+.lbsub th{font:500 11px/1.2 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;white-space:nowrap}
+.lbsub th.r,.lbsub td.r{text-align:right}
+.lbsub td{padding:7px 10px;border-top:1px solid var(--line)}
+.lbfoot{margin:10px 0 0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+@media (max-width:600px){
+  th.rank,td.rank,.lbsub .hm{display:none}
+  .lbdetail{padding:12px 12px 10px}
+  button.wallet .walletdot{width:22px;height:22px}
+}

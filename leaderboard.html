@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Stock tracker · Tidewatch</title>
-<meta name="description" content="Robinhood Chain stock tokens, their on-chain price next to the real share price, live.">
-<link rel="canonical" href="https://tidewatch-olive.vercel.app/stocks">
+<title>Leaderboard · Tidewatch</title>
+<meta name="description" content="The wallets making the most from trading stock tokens on Robinhood Chain, updated hourly.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/leaderboard">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta property="og:title" content="Stock tracker · Tidewatch">
-<meta property="og:description" content="Robinhood Chain stock tokens, their on-chain price next to the real share price, live.">
-<meta property="og:url" content="https://tidewatch-olive.vercel.app/stocks">
+<meta property="og:title" content="Leaderboard · Tidewatch">
+<meta property="og:description" content="The wallets making the most from trading stock tokens on Robinhood Chain, updated hourly.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/leaderboard">
 <meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -31,8 +31,8 @@
       <a href="/yields">Yields</a>
       <a href="/calculator">Calculator</a>
       <a href="/stock-yield">Stock yield</a>
-      <a href="/stocks" aria-current="page">Stock tracker</a>
-      <a href="/leaderboard">Leaderboard</a>
+      <a href="/stocks">Stock tracker</a>
+      <a href="/leaderboard" aria-current="page">Leaderboard</a>
       <a href="/new">New</a>
       <a href="/risk">Risk score</a>
       <a href="/learn">Learn</a>
@@ -43,8 +43,8 @@
     <a href="/yields">Yields</a>
     <a href="/calculator">Calculator</a>
     <a href="/stock-yield">Stock yield</a>
-    <a href="/stocks" aria-current="page">Stock tracker</a>
-    <a href="/leaderboard">Leaderboard</a>
+    <a href="/stocks">Stock tracker</a>
+    <a href="/leaderboard" aria-current="page">Leaderboard</a>
     <a href="/new">New</a>
     <a href="/risk">Risk score</a>
     <a href="/learn">Learn</a>
@@ -54,53 +54,48 @@
 
   <header class="pagehead">
     <div>
-      <p class="eyebrow">Stock tracker</p>
-      <h1>Is your stock token priced fairly?</h1>
-      <p class="lede">Every Robinhood Chain stock token, with its on-chain price next to the real share price. See where tokens trade at a premium or a discount, and how deep the market behind them is. Tap a token for its history, or 🔔 for a Telegram alert.</p>
+      <p class="eyebrow">Leaderboard</p>
+      <h1>Who is winning at stock tokens?</h1>
+      <p class="lede">The wallets making the most from trading stock tokens on Robinhood Chain, read straight from the chain. Updated every hour. Tap a wallet to see what it traded.</p>
     </div>
   </header>
 
   <section class="gauge glass" aria-label="Key figures">
-    <div><small>Stock tokens</small><strong id="sTokens">–</strong><span id="sTokensSub">&nbsp;</span></div>
-    <div><small>Tokenized value</small><strong id="sTokenized">–</strong><span id="sTokenizedSub">&nbsp;</span></div>
-    <div><small>Traded on chain, 24h</small><strong id="sVolume">–</strong><span id="sVolumeSub">&nbsp;</span></div>
-    <div><small>Fairly priced</small><strong id="sFair">–</strong><span id="sFairSub">&nbsp;</span></div>
+    <div><small>Wallets trading</small><strong id="lWallets">–</strong><span id="lWalletsSub">&nbsp;</span></div>
+    <div><small>Volume</small><strong id="lVolume">–</strong><span id="lVolumeSub">&nbsp;</span></div>
+    <div><small>Best wallet</small><strong id="lBest">–</strong><span id="lBestSub">&nbsp;</span></div>
+    <div><small>Most traded</small><strong id="lStock">–</strong><span id="lStockSub">&nbsp;</span></div>
   </section>
 
-  <section class="tablepanel glass" aria-labelledby="trackH">
+  <section class="tablepanel glass" aria-labelledby="lbH">
     <div class="sectionhead">
-      <div><h2 id="trackH">Share price vs. on-chain price</h2><p class="mkt" id="mkt">Checking market hours…</p></div>
+      <div><h2 id="lbH">Top stock-token traders</h2><p class="mkt" id="lbNote">Loading the leaderboard…</p></div>
     </div>
     <div class="controls">
-      <div class="chips" role="group" aria-label="Price gap">
-        <button class="chip" data-view="all" aria-pressed="true">All</button>
-        <button class="chip" data-view="discount" aria-pressed="false">Discount</button>
-        <button class="chip" data-view="premium" aria-pressed="false">Premium</button>
-        <button class="chip" data-view="fair" aria-pressed="false">Fair</button>
+      <div class="chips" role="group" aria-label="Time window">
+        <button class="chip" data-win="24h" aria-pressed="false">24 hours</button>
+        <button class="chip" data-win="7d" aria-pressed="true">7 days</button>
       </div>
-      <label class="field" for="minLiq">Pool depth
-        <select id="minLiq">
-          <option value="0">All</option>
-          <option value="10000" selected>$10k+</option>
-          <option value="100000">$100k+</option>
-          <option value="1000000">$1M+</option>
-        </select>
-      </label>
+      <div class="chips" role="group" aria-label="Rank by">
+        <button class="chip" data-rank="profit" aria-pressed="true">Top profit</button>
+        <button class="chip" data-rank="loss" aria-pressed="false">Top loss</button>
+        <button class="chip" data-rank="volume" aria-pressed="false">Most volume</button>
+      </div>
+      <label class="field check" for="showBots" title="Wallets that trade more than about four times an hour on average"><input type="checkbox" id="showBots"> Show bots</label>
       <span class="grow"></span>
-      <input type="search" id="q" placeholder="Search ticker or company" aria-label="Search ticker or company">
+      <input type="search" id="q" placeholder="Search wallet or ticker" aria-label="Search wallet address or ticker">
     </div>
     <div class="tablebox">
       <table>
         <thead><tr>
-          <th><button data-sort="symbol">Stock</button></th>
-          <th class="r"><button data-sort="gap">Gap</button></th>
-          <th class="r"><button data-sort="ref">Share price</button></th>
-          <th class="r"><button data-sort="onchain">On chain</button></th>
-          <th class="r"><button data-sort="liquidity">Pool depth</button></th>
-          <th class="r"><button data-sort="volume24h">24h volume</button></th>
-          <th class="r"><span class="visually-hidden">Pool link</span></th>
+          <th class="r rank">#</th>
+          <th>Wallet</th>
+          <th class="r">Profit</th>
+          <th class="r">Volume</th>
+          <th class="r">Trades</th>
+          <th>Traded most</th>
         </tr></thead>
-        <tbody id="rows"><tr><td colspan="7" class="empty">Loading stock tokens…</td></tr></tbody>
+        <tbody id="rows"><tr><td colspan="6" class="empty">Loading the leaderboard…</td></tr></tbody>
       </table>
     </div>
     <div class="more"><span id="count"></span><button class="btn ghost small" id="showMore" hidden>Show more</button></div>
@@ -108,22 +103,17 @@
 
   <div class="twocol block-sm">
     <div class="glass note-card">
-      <p class="eyebrow">Why prices drift</p>
-      <h3>Arbitrage keeps them close, most of the time</h3>
-      <p>Robinhood mints and redeems stock tokens at the real share price, so when a token drifts far from it, traders can profit by closing the gap. Small gaps remain because of trading fees, pool depth and how fast traders react.</p>
-      <p>When the US market is closed for the weekend, share prices freeze but tokens keep trading. A gap then shows where traders expect the stock to open, not necessarily a bargain.</p>
+      <p class="eyebrow">How we calculate</p>
+      <h3>Profit from the trades in the window</h3>
+      <p>We read every swap in the stock-token pools on Uniswap and credit it to the wallet whose token balance changed. <b>Profit</b> is what a wallet received from selling, minus what it paid for buying, plus the tokens it still holds from those trades at today’s on-chain price.</p>
+      <p>Only trades inside the window count, so tokens bought before it don’t distort the result. Dollar values use the pool price at the time of the trade; ETH is converted at the current rate.</p>
     </div>
     <div class="glass note-card">
-      <p class="eyebrow">How we calculate</p>
-      <h3>Two prices, one gap</h3>
-      <p><b>Share price</b> is the midpoint of Robinhood’s live bid and ask for one token, adjusted for dividends and splits. <b>On chain</b> is the price in the token’s deepest pool, as indexed by DexScreener.</p>
-      <p><b>Gap</b> is the on-chain price divided by the share price, minus one. Within ±0.5% counts as fair. Pools under $10k are marked thin, because a single small trade can move them.</p>
+      <p class="eyebrow">What’s left out</p>
+      <h3>Real traders, not routing</h3>
+      <p>Arbitrage bots and routers end each transaction without a position, so they drop out. Wallets averaging more than four trades an hour are marked as bots and hidden unless you switch them on. Wallets with under $250 of trades aren’t ranked.</p>
+      <p>Wallets are anonymous addresses, and a person can use several. This is on-chain data, not financial advice.</p>
     </div>
-  </div>
-
-  <div class="nextsteps">
-    <a class="glass" href="/stock-yield"><p class="eyebrow">Next step</p><h3>Earn on your stock tokens →</h3><p>See what lending or providing liquidity pays on top of holding the share.</p></a>
-    <a class="glass" href="/about#disclaimer"><p class="eyebrow">Good to know</p><h3>Not financial advice →</h3><p>Prices come from third parties and can be delayed or wrong. Always check before you trade.</p></a>
   </div>
 
   <footer class="sitefoot">
@@ -144,7 +134,7 @@
   </footer>
 </div>
 <script src="/chart.js"></script>
-<script src="/stocks.js"></script>
+<script src="/leaderboard.js"></script>
 <script src="/tide.js"></script>
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
