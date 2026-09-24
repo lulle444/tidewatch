@@ -304,3 +304,8 @@ footer.sitefoot{display:block}
 .dlgcmd code{flex:1;min-width:0;font:500 12.5px var(--mono);overflow-wrap:anywhere}
 .dlgx{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:999px;border:1px solid var(--line);background:#fff;font:400 20px/1 var(--body);color:var(--muted);cursor:pointer}
 .alertdlg form{margin:0}
+.tag.odd{background:var(--mid-soft);color:var(--mid);cursor:help;vertical-align:2px}
+.empty-card{grid-column:1/-1;max-width:720px}
+.empty-card p{font-size:14.5px}
+.field.check{display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+.field.check input{width:16px;height:16px;accent-color:var(--accent);margin:0}

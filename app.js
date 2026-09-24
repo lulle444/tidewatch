@@ -9,10 +9,10 @@ const TG_BOT = "Usetidewatch_bot";   // Telegram alerts bot username, without @.
 const STABLES = /^(USD|USDC|USDT|USDG|USDE|SUSDE|DAI|SDAI|USDS|SUSDS|PYUSD|FRAX|GHO|USD0|RLUSD|USDX|EURC|STEAKUSDG|STEAKUSDC)/;
 const TICKERS = new Set(("AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK.B BRKB JPM V MA LLY UNH XOM WMT JNJ PG HD COST ORCL NFLX AMD CRM ADBE PEP KO " +
   "MCD INTC CSCO QCOM TXN IBM BA DIS NKE PYPL SQ XYZ SHOP UBER ABNB COIN MSTR PLTR SNOW HOOD RIVN LCID GME AMC SOFI RBLX SPOT BABA NIO " +
-  "ARM SMCI MU ASML TSM CRWD PANW NET DDOG ZM SNAP PINS DKNG CVX GS MS BAC WFC C SCHW BLK SPY QQQ VOO VTI IWM DIA GLD SLV TLT ARKK").split(" "));
+  "ARM SMCI MU ASML TSM CRWD PANW NET DDOG ZM SNAP PINS DKNG CVX GS MS BAC WFC C SCHW BLK SPY QQQ VOO VTI IWM DIA GLD SLV TLT ARKK RDDT SNDK USO SGOV USAR").split(" "));
 
 const PAGE_LIMIT = +document.body.dataset.limit || 25;
-const state = {pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", sort:"apy", dir:-1, limit:PAGE_LIMIT, sample:false};
+const state = {pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", hideOdd:true, sort:"apy", dir:-1, limit:PAGE_LIMIT, sample:false};
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -160,6 +160,7 @@ function filtered(){
   return state.pools.filter(p =>
     (state.kind === "all" || p.kind === state.kind) &&
     p.tvlUsd >= state.minTvl &&
+    !(state.hideOdd && $("hideOdd") && p.outlier) &&
     BAND_RANK[p.band] <= BAND_RANK[state.maxRisk] &&
     (!q || p.symbol.toLowerCase().includes(q) || p.name.toLowerCase().includes(q))
   ).sort((a,b) => {
@@ -186,7 +187,7 @@ function renderTable(){
     return `<tr>
       <td><div class="proto"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a><span>${esc(p.category || "")}${p.meta ? " · " + esc(p.meta) : ""}</span></div></td>
       <td><div class="assetcell"><span class="asset">${esc(p.symbol)}</span>${tag}</div></td>
-      <td class="r"><span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
+      <td class="r">${p.outlier ? '<span class="tag odd" title="DefiLlama flags this APY as unusual compared with its own history. Often short-lived reward tokens in a thin pool.">Unusual</span> ' : ""}<span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
       <td class="r num">${fmtPct(p.apyMean30d)}</td>
       <td class="r num">${fmtUsd(p.tvlUsd)}</td>
       <td><div class="riskcell"><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span>${bell(p)}</div></td>
@@ -222,8 +223,9 @@ function renderGauge(){
   set("gTvl", fmtUsd(tvl));
   set("gTvlSub", state.pools.filter(p => p.kind === "stock").length + " pools with stock tokens");
   set("gStable", sv); set("gStableSub", ss); set("hStable", sv); set("hStableSub", ss);
-  set("gStock", k ? fmtPct(k.apyMean30d) : "–");
-  set("gStockSub", k ? bestSub(k) : "No pools yet");
+  const nStock = state.pools.filter(p => p.kind === "stock").length;
+  set("gStock", k ? fmtPct(k.apyMean30d) : nStock ? "Early days" : "–");
+  set("gStockSub", k ? bestSub(k) : nStock ? `${nStock} small pools, none steady yet` : "No pools yet");
 }
 
 function renderCalc(){
@@ -231,7 +233,7 @@ function renderCalc(){
   const months = Math.max(1, Math.min(60, +$("cMonths").value || 1));
   const fee = Math.max(0, +$("cFee").value || 0);
   const kind = $("cKind").value, maxR = $("cRisk").value;
-  const opts = state.pools.filter(p => p.kind === kind && p.tvlUsd >= 1e6 && BAND_RANK[p.band] <= BAND_RANK[maxR])
+  const opts = state.pools.filter(p => p.kind === kind && p.tvlUsd >= 1e6 && !p.outlier && BAND_RANK[p.band] <= BAND_RANK[maxR])
     .map(p => { const g = amt * (Math.pow(1 + (p.apyMean30d || 0)/100, months/12) - 1) - fee; return {p, g}; })
     .sort((a,b) => b.g - a.g).slice(0, 5);
   $("calcOut").innerHTML = opts.length ? opts.map(({p,g}) => `
@@ -243,7 +245,8 @@ function renderCalc(){
 }
 
 function renderStock(){
-  const stock = state.pools.filter(p => p.kind === "stock" && p.tvlUsd >= 1e5);
+  const all = state.pools.filter(p => p.kind === "stock");
+  const stock = all.filter(p => p.tvlUsd >= 1e5 && !p.outlier);
   const byTicker = new Map();
   stock.forEach(p => {
     const t = p.symbol.toUpperCase().split(/[-\/ ]+/).find(x => TICKERS.has(x) || TICKERS.has(x.replace(/X$|ON$|\.RH$/, ""))) || p.symbol;
@@ -252,7 +255,14 @@ function renderStock(){
     else cur.n++;
   });
   const cards = [...byTicker.values()].sort((a,b) => b.tvlUsd - a.tvlUsd).slice(0, 6);
-  if (!cards.length){ $("stockGrid").innerHTML = `<p class="sub">No stock token pools above $100k TVL right now.</p>`; return; }
+  if (!cards.length){
+    const top = all.reduce((m, p) => Math.max(m, p.tvlUsd), 0);
+    $("stockGrid").innerHTML = `<article class="scard glass empty-card"><header><b>Early days</b></header>
+      <p>${all.length ? `There are ${all.length} stock-token pools on the chain, but the largest holds just ${fmtUsd(top)}, and DefiLlama flags their yields as unusual: mostly short-lived reward tokens in thin liquidity pools.` : "There are no stock-token pools on the chain yet."}
+      We’ll compare stock yields here once a pool is big and steady enough to be meaningful.</p>
+      ${all.length ? `<p><a href="/yields?kind=stock&tvl=0&odd=1">See all stock-token pools in the table →</a></p>` : ""}</article>`;
+    return;
+  }
   const max = Math.max(...cards.map(c => c.apyMean30d), 1);
   $("stockGrid").innerHTML = cards.map(c => {
     const on10k = 10000 * (c.apyMean30d/100);
@@ -281,6 +291,7 @@ document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () =
   renderTable();
 }));
 $("minTvl")?.addEventListener("change", e => { state.minTvl = +e.target.value; state.limit = PAGE_LIMIT; renderTable(); });
+$("hideOdd")?.addEventListener("change", e => { state.hideOdd = e.target.checked; state.limit = PAGE_LIMIT; renderTable(); });
 $("maxRisk")?.addEventListener("change", e => { state.maxRisk = e.target.value; state.limit = PAGE_LIMIT; renderTable(); });
 $("q")?.addEventListener("input", e => { state.q = e.target.value; renderTable(); });
 $("showMore")?.addEventListener("click", () => { state.limit += 25; renderTable(); });
@@ -325,5 +336,13 @@ document.querySelectorAll("th button").forEach(b => b.addEventListener("click", 
 $("calc")?.addEventListener("input", renderCalc);
 $("calc")?.addEventListener("submit", e => e.preventDefault());
 
+// Deep links into the table, e.g. /yields?kind=stock&tvl=0&odd=1
+(function(){
+  const q = new URLSearchParams(location.search), chip = document.querySelector(`.chip[data-kind="${q.get("kind")}"]`);
+  if (chip){ state.kind = chip.dataset.kind; document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === chip ? "true" : "false")); }
+  if (q.get("odd") === "1" && $("hideOdd")){ $("hideOdd").checked = false; state.hideOdd = false; }
+  const tvl = q.get("tvl"), sel = $("minTvl");
+  if (sel && tvl !== null && [...sel.options].some(o => o.value === tvl)){ sel.value = tvl; state.minTvl = +tvl; }
+})();
 load();
 })();
