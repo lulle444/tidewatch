@@ -39,7 +39,7 @@ async function load(){
     state.data = j;
     const at = new Date(j.updatedAt);
     $("dot").className = "dot live";
-    set("sourceText", "Updated " + at.toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"}));
+    set("sourceText", "Updated hourly · " + at.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"}));
     set("updated", "Trades read from Robinhood Chain, updated " + at.toLocaleString("en-US", {dateStyle:"medium", timeStyle:"short"}));
     render();
   } catch (e) {
