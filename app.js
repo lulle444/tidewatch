@@ -15,7 +15,9 @@ const PAGE_LIMIT = +document.body.dataset.limit || 25;
 const HIST_API = "/api/pool-history?pool=", HIST_LLAMA = "https://yields.llama.fi/chart/";
 const RANGES = {"30d": 30 * 864e5, "90d": 90 * 864e5, "All": Infinity};
 const poolHistory = new Map();   // pool id -> [[time ms, APY, base APY, reward APY, TVL], ...]
-const state = {open:null, range:"30d", pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", hideOdd:true, sort:"apy", dir:-1, limit:PAGE_LIMIT, sample:false};
+const NEW_PAGE = document.body.dataset.page === "new";   // "New on the chain": only pools first seen recently
+const COLS = NEW_PAGE ? 7 : 6;
+const state = {open:null, range:"30d", newDays:30, newComplete:true, pools:[], kind:"all", minTvl: +(document.body.dataset.minTvl ?? 100000), maxRisk: document.body.dataset.maxRisk || "high", q:"", hideOdd:true, sort: document.body.dataset.sort || "apy", dir:-1, limit:PAGE_LIMIT, sample:false};
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -144,6 +146,11 @@ async function load(){
       writeCache(list, at);
     }
     state.pools = list; state.sample = false;
+    if (NEW_PAGE){
+      const fs = await fetchJson("/api/new").catch(() => null);
+      state.newComplete = !!(fs && fs.complete);
+      list.forEach(p => { p.firstSeen = fs && fs.firstSeen ? fs.firstSeen[p.id] ?? null : null; });
+    }
     $("dot").className = "dot live";
     $("sourceText").textContent = "Live from DefiLlama · " + at.toLocaleTimeString("en-US", {hour:"2-digit", minute:"2-digit"});
     set("updated", "Data from " + at.toLocaleString("en-US", {dateStyle:"medium", timeStyle:"short"}));
@@ -162,6 +169,7 @@ function filtered(){
   const q = state.q.trim().toLowerCase();
   return state.pools.filter(p =>
     (state.kind === "all" || p.kind === state.kind) &&
+    (!NEW_PAGE || isNew(p)) &&
     p.tvlUsd >= state.minTvl &&
     !(state.hideOdd && $("hideOdd") && p.outlier) &&
     BAND_RANK[p.band] <= BAND_RANK[state.maxRisk] &&
@@ -189,7 +197,8 @@ function renderTable(){
     const why = `Audit: ${p.audited ? "yes" : "no"} · Age: ${p.ageDays ? Math.round(p.ageDays) + " days" : "unknown"} · IL: ${p.ilRisk === "yes" ? "yes" : "no"}`;
     const canOpen = !state.sample && UUID_RE.test(p.id || ""), open = canOpen && state.open === p.id;
     const asset = `<span class="asset">${esc(p.symbol)}</span>${tag}`;
-    return `<tr${canOpen ? ` class="srow${open ? " is-open" : ""}" data-id="${esc(p.id)}"` : ""}>
+    return `<tr${canOpen ? ` class="srow${open ? " is-open" : ""}" data-id="${esc(p.id)}"` : ""}>${NEW_PAGE ? `
+      <td class="num seen">${p.firstSeen ? `${fmtDay(p.firstSeen)}<small class="sub2">${ago(p.firstSeen)}</small>` : "–"}</td>` : ""}
       <td><div class="proto"><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a><span>${esc(p.category || "")}${p.meta ? " · " + esc(p.meta) : ""}</span></div></td>
       <td>${canOpen ? `<button class="ticker assetcell" type="button" aria-expanded="${open}" aria-label="${esc(p.symbol)} on ${esc(p.name)}: show APY history">${asset}<span class="chev" aria-hidden="true">›</span></button>` : `<div class="assetcell">${asset}</div>`}</td>
       <td class="r">${p.outlier ? '<span class="tag odd" title="DefiLlama flags this APY as unusual compared with its own history. Often short-lived reward tokens in a thin pool.">Unusual</span> ' : ""}<span class="apy">${fmtPct(p.apy)}</span>${split}${delta}</td>
@@ -197,7 +206,7 @@ function renderTable(){
       <td class="r num">${fmtUsd(p.tvlUsd)}</td>
       <td><div class="riskcell"><span class="risk ${p.band}" title="${esc(why)}">${BAND_LABEL[p.band]} <span class="num">${p.score}</span></span>${bell(p)}</div></td>
     </tr>${open ? detailRow(p) : ""}`;
-  }).join("") : `<tr><td colspan="6" class="empty">No pools match these filters. Try a lower min. TVL or more risk levels.</td></tr>`;
+  }).join("") : `<tr><td colspan="${COLS}" class="empty">${NEW_PAGE && state.sample ? "New pools need live data. Reload the page to try again." : NEW_PAGE ? "No new pools match these filters. Try a longer time window or untick “Hide unusual APYs”." : "No pools match these filters. Try a lower min. TVL or more risk levels."}</td></tr>`;
   set("count", `Showing ${shown.length} of ${rows.length} pools`);
   if (state.open && shown.some(p => p.id === state.open)) drawPoolChart();
   if ($("showMore")) $("showMore").hidden = rows.length <= state.limit;
@@ -288,7 +297,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function detailRow(p){
   const chips = Object.keys(RANGES).map(k => `<button class="chip" type="button" data-range="${k}" aria-pressed="${k === state.range}">${k}</button>`).join("");
-  return `<tr class="detail"><td colspan="6"><div class="gapchart" id="gapchart">
+  return `<tr class="detail"><td colspan="${COLS}"><div class="gapchart" id="gapchart">
     <div class="gchead">
       <div><h3>${esc(p.symbol)} on ${esc(p.name)}: APY history</h3><p id="gcstats">Daily readings from DefiLlama.</p></div>
       <div class="gctools"><div class="chips" role="group" aria-label="Time range">${chips}</div>${bell(p).replace('class="bell"', 'class="btn ghost small bellbtn"').replace("</svg></a>", "</svg> Alert me</a>")}</div>
@@ -334,7 +343,50 @@ async function drawPoolChart(){
   });
 }
 
+/* ---------- New on the chain ---------- */
+const isNew = p => p.firstSeen && p.firstSeen >= Date.now() - state.newDays * 864e5;
+const fmtDay = t => new Date(t).toLocaleDateString("en-US", {month:"short", day:"numeric"});
+function ago(t){
+  const d = Math.floor((Date.now() - t) / 864e5);
+  return d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago";
+}
+
+function renderNew(){
+  const fresh = state.pools.filter(isNew);
+  // a protocol is new when its first pool on the chain is new
+  const byProto = new Map();
+  state.pools.forEach(p => { if (!p.firstSeen) return; const g = byProto.get(p.project) || {pools: [], first: Infinity}; g.pools.push(p); g.first = Math.min(g.first, p.firstSeen); byProto.set(p.project, g); });
+  const protos = [...byProto.values()].filter(g => g.first >= Date.now() - state.newDays * 864e5).sort((a, b) => b.first - a.first);
+  const win = `last ${state.newDays} days`;
+  set("nPools", fresh.length); set("nPoolsSub", win);
+  set("nProtos", protos.length); set("nProtosSub", win);
+  set("nTvl", fmtUsd(fresh.reduce((s, p) => s + p.tvlUsd, 0))); set("nTvlSub", fresh.length ? "across " + fresh.length + " pool" + (fresh.length === 1 ? "" : "s") : "\u00a0");
+  const newest = fresh.slice().sort((a, b) => b.firstSeen - a.firstSeen)[0];
+  set("nLatest", newest ? ago(newest.firstSeen).replace(/^./, c => c.toUpperCase()) : "–");
+  set("nLatestSub", newest ? `${newest.symbol} · ${newest.name}` : "Nothing new in this window");
+  set("newNote", state.sample ? "Sample data: new pools need live data." :
+    "First seen is the first day DefiLlama tracked the pool." + (state.newComplete ? "" : " Still checking a few pools, so reload in a minute for the full list."));
+  const grid = $("protoGrid");
+  if (!grid) return;
+  grid.innerHTML = protos.length ? protos.map(g => {
+    const p = g.pools[0], live = g.pools.filter(x => !x.outlier);
+    const tvl = g.pools.reduce((s, x) => s + x.tvlUsd, 0), bestApy = Math.max(...live.map(x => x.apy), -Infinity);
+    return `<article class="glass protocard">
+      <header><div><h3><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a></h3><span>${esc(p.category || "Protocol")}</span></div>
+        <span class="tag ${p.audited ? "stock" : "odd"}">${p.audited ? "Audited" : "No audit found"}</span></header>
+      <dl>
+        <div><dt>Arrived</dt><dd>${fmtDay(g.first)} <small>${ago(g.first)}</small></dd></div>
+        <div><dt>Pools</dt><dd class="num">${g.pools.length}</dd></div>
+        <div><dt>TVL</dt><dd class="num">${fmtUsd(tvl)}</dd></div>
+        <div><dt>Best APY</dt><dd class="num">${isFinite(bestApy) ? fmtPct(bestApy) : `${fmtPct(Math.max(...g.pools.map(x => x.apy)))}<small>unusual</small>`}</dd></div>
+      </dl>
+      <button class="btn ghost small" type="button" data-proto="${esc(p.name)}">See its pools ↓</button>
+    </article>`;
+  }).join("") : `<div class="glass note-card empty-card"><p>No new protocols in the ${esc(win)}. ${state.newDays < 90 ? "Try a longer window above." : ""}</p></div>`;
+}
+
 function renderAll(){
+  if (NEW_PAGE) renderNew();
   renderGauge();
   if ($("rows")) renderTable();
   if ($("calcOut")) renderCalc();
@@ -342,11 +394,22 @@ function renderAll(){
 }
 
 /* ---------- events ---------- */
-document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+document.querySelectorAll(".chip[data-kind]").forEach(b => b.addEventListener("click", () => {
   state.kind = b.dataset.kind; state.limit = PAGE_LIMIT;
-  document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  document.querySelectorAll(".chip[data-kind]").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
   renderTable();
 }));
+document.querySelectorAll(".chip[data-days]").forEach(b => b.addEventListener("click", () => {
+  state.newDays = +b.dataset.days; state.limit = PAGE_LIMIT;
+  document.querySelectorAll(".chip[data-days]").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  renderAll();
+}));
+$("protoGrid")?.addEventListener("click", e => {
+  const b = e.target.closest("[data-proto]");
+  if (!b || !$("q")) return;
+  $("q").value = state.q = b.dataset.proto; state.limit = PAGE_LIMIT; renderTable();
+  $("newPoolsH")?.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+});
 $("minTvl")?.addEventListener("change", e => { state.minTvl = +e.target.value; state.limit = PAGE_LIMIT; renderTable(); });
 $("hideOdd")?.addEventListener("change", e => { state.hideOdd = e.target.checked; state.limit = PAGE_LIMIT; renderTable(); });
 $("maxRisk")?.addEventListener("change", e => { state.maxRisk = e.target.value; state.limit = PAGE_LIMIT; renderTable(); });
@@ -410,8 +473,10 @@ $("calc")?.addEventListener("submit", e => e.preventDefault());
 // Deep links into the table, e.g. /yields?kind=stock&tvl=0&odd=1
 (function(){
   const q = new URLSearchParams(location.search), chip = document.querySelector(`.chip[data-kind="${q.get("kind")}"]`);
-  if (chip){ state.kind = chip.dataset.kind; document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === chip ? "true" : "false")); }
+  if (chip){ state.kind = chip.dataset.kind; document.querySelectorAll(".chip[data-kind]").forEach(x => x.setAttribute("aria-pressed", x === chip ? "true" : "false")); }
   if (q.get("odd") === "1" && $("hideOdd")){ $("hideOdd").checked = false; state.hideOdd = false; }
+  if ($("minTvl") && [...$("minTvl").options].some(o => +o.value === state.minTvl)) $("minTvl").value = String(state.minTvl);
+  if (q.get("q") && $("q")){ $("q").value = state.q = q.get("q"); }
   const tvl = q.get("tvl"), sel = $("minTvl");
   if (sel && tvl !== null && [...sel.options].some(o => o.value === tvl)){ sel.value = tvl; state.minTvl = +tvl; }
 })();

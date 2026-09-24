@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Yields · Tidewatch</title>
-<meta name="description" content="Every yield pool on Robinhood Chain, sortable by APY, TVL and risk.">
-<link rel="canonical" href="https://tidewatch-olive.vercel.app/yields">
+<title>New on the chain · Tidewatch</title>
+<meta name="description" content="New pools and protocols on Robinhood Chain, with a risk score from day one.">
+<link rel="canonical" href="https://tidewatch-olive.vercel.app/new">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta property="og:title" content="Yields · Tidewatch">
-<meta property="og:description" content="Every yield pool on Robinhood Chain, sortable by APY, TVL and risk.">
-<meta property="og:url" content="https://tidewatch-olive.vercel.app/yields">
+<meta property="og:title" content="New on the chain · Tidewatch">
+<meta property="og:description" content="New pools and protocols on Robinhood Chain, with a risk score from day one.">
+<meta property="og:url" content="https://tidewatch-olive.vercel.app/new">
 <meta property="og:image" content="https://tidewatch-olive.vercel.app/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -22,51 +22,65 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
+<body data-page="new" data-min-tvl="0" data-limit="50" data-sort="firstSeen">
 <canvas id="tide" aria-hidden="true"></canvas>
 <div class="wrap">
   <nav class="nav glass" aria-label="Main">
     <a class="logo" href="/" aria-label="Tidewatch home"><img src="/assets/logo-mark.png" alt="" width="36" height="36"><span class="word">TIDE<b>WATCH</b></span></a>
     <div class="navlinks">
-      <a href="/yields" aria-current="page">Yields</a>
+      <a href="/yields">Yields</a>
       <a href="/calculator">Calculator</a>
       <a href="/stock-yield">Stock yield</a>
       <a href="/stocks">Stock tracker</a>
-      <a href="/new">New</a>
+      <a href="/new" aria-current="page">New</a>
       <a href="/risk">Risk score</a>
       <a href="/learn">Learn</a>
     </div>
     <div class="source" id="source"><span class="dot" id="dot"></span><span id="sourceText">Loading data…</span></div>
   </nav>
   <div class="mobilenav" aria-label="Sections">
-    <a href="/yields" aria-current="page">Yields</a>
+    <a href="/yields">Yields</a>
     <a href="/calculator">Calculator</a>
     <a href="/stock-yield">Stock yield</a>
     <a href="/stocks">Stock tracker</a>
-    <a href="/new">New</a>
+    <a href="/new" aria-current="page">New</a>
     <a href="/risk">Risk score</a>
     <a href="/learn">Learn</a>
   </div>
 
   <div class="banner" id="sampleBanner" hidden><b>Sample data.</b><span>Live data couldn’t be loaded in this view, so the figures below are illustrative, not current. Reload the page to try DefiLlama again.</span></div>
 
-  <header class="pagehead has-pic">
+  <header class="pagehead">
     <div>
-      <p class="eyebrow">Live yield table</p>
-      <h1>Where your capital earns the most</h1>
-      <p class="lede">Every pool on Robinhood Chain. Click a column to sort. APY is the total annual return, split into base (interest and fees) and rewards (tokens that can lose value). Tap 🔔 for a Telegram alert.</p>
+      <p class="eyebrow">New on the chain</p>
+      <h1>Fresh on Robinhood Chain</h1>
+      <p class="lede">Every pool and protocol that started earning on the chain recently, with a risk score from day one. New pools often pay the most and carry the most risk, so check the score before you deposit.</p>
     </div>
-    <figure class="headpic"><img src="/assets/brand/pools-table.webp" alt="A glass Tidewatch table of pools with APY, TVL and risk, standing on a rock by the sea" width="1400" height="788" fetchpriority="high"><figcaption>Illustration</figcaption></figure>
   </header>
 
   <section class="gauge glass" aria-label="Key figures">
-    <div><small>Pools</small><strong id="gPools">–</strong><span id="gPoolsSub">&nbsp;</span></div>
-    <div><small>TVL in pools</small><strong id="gTvl">–</strong><span id="gTvlSub">&nbsp;</span></div>
-    <div><small>Best stablecoin</small><strong id="gStable">–</strong><span id="gStableSub">&nbsp;</span></div>
-    <div><small>Best stock token</small><strong id="gStock">–</strong><span id="gStockSub">&nbsp;</span></div>
+    <div><small>New pools</small><strong id="nPools">–</strong><span id="nPoolsSub">&nbsp;</span></div>
+    <div><small>New protocols</small><strong id="nProtos">–</strong><span id="nProtosSub">&nbsp;</span></div>
+    <div><small>TVL in new pools</small><strong id="nTvl">–</strong><span id="nTvlSub">&nbsp;</span></div>
+    <div><small>Newest</small><strong id="nLatest">–</strong><span id="nLatestSub">&nbsp;</span></div>
   </section>
 
-  <main class="tablepanel glass">
+  <div class="windowbar">
+    <div class="chips" role="group" aria-label="Time window">
+      <button class="chip" data-days="7" aria-pressed="false">Last 7 days</button>
+      <button class="chip" data-days="30" aria-pressed="true">Last 30 days</button>
+      <button class="chip" data-days="90" aria-pressed="false">Last 90 days</button>
+    </div>
+    <p class="note" id="newNote">First seen is the first day DefiLlama tracked the pool.</p>
+  </div>
+
+  <section class="block-sm" aria-labelledby="protoH">
+    <div class="sectionhead"><div><h2 id="protoH">New protocols</h2><p class="sub">Protocols whose first pool on the chain appeared in this window.</p></div></div>
+    <div class="protogrid" id="protoGrid"><p class="muted">Loading…</p></div>
+  </section>
+
+  <section class="tablepanel glass block-sm" aria-labelledby="newPoolsH">
+    <div class="sectionhead"><div><h2 id="newPoolsH">New pools</h2><p class="sub">Tap an asset for its APY history, or 🔔 for an alert. Unusual APYs are hidden until you untick the box.</p></div></div>
       <div class="controls">
         <div class="chips" role="group" aria-label="Asset type">
           <button class="chip" data-kind="all" aria-pressed="true">All</button>
@@ -96,6 +110,7 @@
       <div class="tablebox">
         <table>
           <thead><tr>
+            <th><button data-sort="firstSeen">First seen</button></th>
             <th><button data-sort="name">Protocol</button></th>
             <th><button data-sort="symbol">Asset</button></th>
             <th class="r"><button data-sort="apy">APY</button></th>
@@ -103,16 +118,16 @@
             <th class="r"><button data-sort="tvlUsd">TVL</button></th>
             <th><button data-sort="score">Risk</button></th>
           </tr></thead>
-          <tbody id="rows"><tr><td colspan="6" class="empty">Loading pools…</td></tr></tbody>
+          <tbody id="rows"><tr><td colspan="7" class="empty">Loading new pools…</td></tr></tbody>
         </table>
       </div>
       <div class="more"><span id="count"></span><button class="btn ghost small" id="showMore" hidden>Show more</button></div>
-  </main>
-
-  <section class="nextsteps" aria-label="Next steps">
-    <a class="glass" href="/calculator"><p class="eyebrow">Calculator</p><h3>Project your return →</h3><p>See what an amount could earn over a few months, after fees.</p></a>
-    <a class="glass" href="/risk"><p class="eyebrow">Risk score</p><h3>Understand the score →</h3><p>What goes into Low, Medium and High, and what it can’t tell you.</p></a>
   </section>
+
+  <div class="nextsteps">
+    <a class="glass" href="/risk"><p class="eyebrow">Before you deposit</p><h3>How we score risk →</h3><p>New protocols start with fewer points for age and TVL. Here is why, and what else we check.</p></a>
+    <a class="glass" href="https://t.me/Usetidewatch_bot" target="_blank" rel="noopener"><p class="eyebrow">Stay ahead</p><h3>Get new pools in Telegram →</h3><p>Send /new to our bot and hear about every new pool with at least $100k TVL.</p></a>
+  </div>
 
   <footer class="sitefoot">
     <div class="footgrid">
