@@ -12,12 +12,15 @@ async function rpc(method, params) {
   const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }) });
   const j = await r.json(); if (j.error) throw new Error(method + ": " + JSON.stringify(j.error)); return j.result;
 }
+let SIZE = 100;
 async function batch(calls) {
   const out = [];
-  for (let i = 0; i < calls.length; i += 100) {
-    const part = calls.slice(i, i + 100).map((c, k) => ({ jsonrpc: "2.0", id: k, method: c[0], params: c[1] }));
+  for (let i = 0; i < calls.length; i += SIZE) {
+    const part = calls.slice(i, i + SIZE).map((c, k) => ({ jsonrpc: "2.0", id: k, method: c[0], params: c[1] }));
     const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(part) });
-    const j = await r.json(); j.sort((a, b) => a.id - b.id); out.push(...j.map(x => x.result));
+    const j = await r.json();
+    if (!Array.isArray(j)) throw new Error("batch " + part.length + ": " + JSON.stringify(j).slice(0, 300));
+    j.sort((a, b) => a.id - b.id); out.push(...j.map(x => x.result));
   }
   return out;
 }
@@ -26,6 +29,7 @@ const addrOf = w => "0x" + w.slice(-40);
 module.exports = async (req, res) => {
   const t0 = Date.now(), out = {};
   try {
+    SIZE = Number(req.query.b || 100);
     const span = Math.min(Number(req.query.span || 3000), 20000);
     const stocks = await currentStocks("https://tidewatch-olive.vercel.app");
     const stockSet = new Set(stocks.map(s => s.address.toLowerCase()));
