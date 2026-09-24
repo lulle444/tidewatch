@@ -2,6 +2,9 @@
 (function(){
 "use strict";
 const API_URL = "/api/leaderboard";
+const LIVE_URL = "/api/leaderboard?live=1";
+const TX = "https://robinhoodchain.blockscout.com/tx/";
+const LIVE_EVERY = 60e3;
 const STOCKS_URL = "/api/stocks";
 const EXPLORER = "https://robinhoodchain.blockscout.com/address/";
 const PAGE = 25;
@@ -30,6 +33,7 @@ async function load(){
     if (!j || !j.data) return;
     j.data.forEach(s => { if (s.logo) state.logos[s.symbol] = s.logo; });
     if (state.data) renderTable();
+    renderLive();
   }).catch(() => {});
   try {
     const r = await fetch(API_URL, {headers:{accept:"application/json"}});
@@ -52,6 +56,30 @@ async function load(){
 }
 
 const win = () => state.data.windows[state.win];
+
+/* ---------- live strip: the biggest trades of the last few minutes, refreshed every minute ---------- */
+const ago = t => { const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "just now" : m + " min ago"; };
+let live = null;
+async function loadLive(){
+  try {
+    const r = await fetch(LIVE_URL, {headers:{accept:"application/json"}});
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    live = await r.json();
+    $("liveDot").className = "dot live";
+  } catch (e) {
+    if (!live) { $("liveDot").className = "dot sample"; $("liveList").innerHTML = '<li class="liveempty">Live trades are unavailable right now.</li>'; }
+    return;
+  }
+  renderLive();
+}
+function renderLive(){
+  if (!live) return;
+  set("liveNote", `The biggest stock-token trades in the last ${live.minutes} minutes`);
+  $("liveList").innerHTML = live.trades.length ? live.trades.map(t => `<li><a class="livetrade ${t.side}" href="${TX + esc(t.tx)}" target="_blank" rel="noopener" aria-label="${esc(short(t.wallet))} ${t.side === "buy" ? "bought" : "sold"} ${esc(fmtUsd(t.usd))} of ${esc(t.sym)}, ${esc(ago(t.at))}. View the transaction on Blockscout">
+      ${stockChip(t.sym)}
+      <span class="lt-main"><b>${t.side === "buy" ? "Bought" : "Sold"} ${esc(fmtUsd(t.usd))}</b><small><span class="num">${esc(short(t.wallet))}</span> · ${esc(ago(t.at))}</small></span>
+    </a></li>`).join("") : '<li class="liveempty">No trades over $1k in the last few minutes. The US market may be closed.</li>';
+}
 
 /* ---------- render ---------- */
 function renderGauge(){
@@ -164,4 +192,7 @@ $("showBots").addEventListener("change", e => { state.bots = e.target.checked; s
 $("q").addEventListener("input", e => { state.q = e.target.value; state.limit = PAGE; if (state.data) renderTable(); });
 
 load();
+loadLive();
+setInterval(() => { if (!document.hidden) loadLive(); }, LIVE_EVERY);
+setInterval(renderLive, 20e3);
 })();
