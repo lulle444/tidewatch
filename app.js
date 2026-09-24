@@ -76,7 +76,7 @@ function build(poolsRaw, protocolsRaw){
       category: m ? m.category : "", symbol: p.symbol, meta: p.poolMeta,
       kind: classify(p.symbol, p.stablecoin), tvlUsd: p.tvlUsd, apy,
       apyBase: p.apyBase, apyReward: p.apyReward, apyMean30d: p.apyMean30d ?? apy,
-      d7: p.apyPct7D, ilRisk: p.ilRisk, exposure: p.exposure,
+      d7: p.apyPct7D, ilRisk: p.ilRisk, exposure: p.exposure, outlier: !!p.outlier,
       score: sc.s, band: sc.band, audited: sc.audited, ageDays: sc.ageDays
     };
   });
@@ -201,21 +201,29 @@ function renderTable(){
   });
 }
 
-function best(kind, minTvl){
-  return state.pools.filter(p => p.kind === kind && p.tvlUsd >= minTvl && p.band !== "high").sort((a,b) => b.apyMean30d - a.apyMean30d)[0];
+// Best 30-day APY for a kind. Prefer bigger, safer pools; stock-token pools on the chain are still
+// small, so relax step by step rather than show nothing. DefiLlama's outliers are never picked.
+const BEST_STEPS = [{tvl: 1e6, high: false}, {tvl: 1e5, high: false}, {tvl: 1e5, high: true}];
+function best(kind){
+  for (const st of BEST_STEPS){
+    const hit = state.pools.filter(p => p.kind === kind && !p.outlier && p.apyMean30d > 0 && p.tvlUsd >= st.tvl && (st.high || p.band !== "high"))
+      .sort((a,b) => b.apyMean30d - a.apyMean30d)[0];
+    if (hit) return hit;
+  }
 }
+const bestSub = p => `${p.symbol} on ${p.name}` + (p.tvlUsd < 1e6 || p.band === "high" ? ` · ${BAND_LABEL[p.band]} risk, ${fmtUsd(p.tvlUsd)} TVL` : "");
 
 function renderGauge(){
   const tvl = state.pools.reduce((s,p) => s + p.tvlUsd, 0);
-  const s = best("stable", 1e6), k = best("stock", 1e6);
-  const sv = s ? fmtPct(s.apyMean30d) : "–", ss = s ? `${s.symbol} on ${s.name}` : "None above $1M TVL";
+  const s = best("stable"), k = best("stock");
+  const sv = s ? fmtPct(s.apyMean30d) : "–", ss = s ? bestSub(s) : "No pools yet";
   set("gPools", state.pools.length);
   set("gPoolsSub", new Set(state.pools.map(p => p.project)).size + " protocols");
   set("gTvl", fmtUsd(tvl));
   set("gTvlSub", state.pools.filter(p => p.kind === "stock").length + " pools with stock tokens");
   set("gStable", sv); set("gStableSub", ss); set("hStable", sv); set("hStableSub", ss);
   set("gStock", k ? fmtPct(k.apyMean30d) : "–");
-  set("gStockSub", k ? `${k.symbol} on ${k.name}` : "None above $1M TVL");
+  set("gStockSub", k ? bestSub(k) : "No pools yet");
 }
 
 function renderCalc(){
