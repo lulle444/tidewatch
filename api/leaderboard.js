@@ -1,5 +1,5 @@
 // The published stock-token trader leaderboard (24h and 7 days), built by /api/lb-index,
-// plus the live strip of the latest big trades (?live=1).
+// plus the live strip of the latest big trades (?live=1, also served at /api/live-trades).
 const {redis} = require("../lib/store");
 const lb = require("../lib/leaderboard");
 

@@ -2,7 +2,7 @@
 (function(){
 "use strict";
 const API_URL = "/api/leaderboard";
-const LIVE_URL = "/api/leaderboard?live=1";
+const LIVE_URL = "/api/live-trades";   // rewritten to /api/leaderboard?live=1 (vercel.json)
 const TX = "https://robinhoodchain.blockscout.com/tx/";
 const LIVE_EVERY = 60e3;
 const STOCKS_URL = "/api/stocks";
