@@ -12,13 +12,14 @@ async function rpc(method, params) {
   const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }) });
   const j = await r.json(); if (j.error) throw new Error(method + ": " + JSON.stringify(j.error)); return j.result;
 }
-let SIZE = 100;
+let SIZE = 20; const stats = {};
 async function batch(calls) {
-  const out = [];
+  const out = []; let tries = 0;
   for (let i = 0; i < calls.length; i += SIZE) {
     const part = calls.slice(i, i + SIZE).map((c, k) => ({ jsonrpc: "2.0", id: k, method: c[0], params: c[1] }));
     const r = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(part) });
-    const j = await r.json();
+    let j = await r.json();
+    if (!Array.isArray(j) && j.error && j.error.code === 429 && tries < 6) { tries++; stats.retries++; await new Promise(r => setTimeout(r, 500 * tries)); i -= SIZE; continue; }
     if (!Array.isArray(j)) throw new Error("batch " + part.length + ": " + JSON.stringify(j).slice(0, 300));
     j.sort((a, b) => a.id - b.id); out.push(...j.map(x => x.result));
   }
@@ -29,7 +30,7 @@ const addrOf = w => "0x" + w.slice(-40);
 module.exports = async (req, res) => {
   const t0 = Date.now(), out = {};
   try {
-    SIZE = Number(req.query.b || 100);
+    SIZE = Number(req.query.b || 20); stats.retries = 0;
     const span = Math.min(Number(req.query.span || 3000), 20000);
     const stocks = await currentStocks("https://tidewatch-olive.vercel.app");
     const stockSet = new Set(stocks.map(s => s.address.toLowerCase()));
@@ -64,7 +65,7 @@ module.exports = async (req, res) => {
     const bt = await batch([["eth_getBlockByNumber", [hex(n - span), false]], ["eth_getBlockByNumber", [hex(n), false]]]);
     out.minutes = (parseInt(bt[1].timestamp, 16) - parseInt(bt[0].timestamp, 16)) / 60;
   } catch (e) { out.error = String(e).slice(0, 500); }
-  out.ms = Date.now() - t0;
+  out.ms = Date.now() - t0; out.retries = stats.retries;
   res.setHeader("cache-control", "no-store");
   res.json(out);
 };
