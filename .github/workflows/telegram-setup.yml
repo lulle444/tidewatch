@@ -1,0 +1,13 @@
+name: Telegram setup
+# Manual: re-registers the bot's webhook at the site's address and checks the domain answers.
+on: workflow_dispatch
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: |
+          set +e
+          for U in https://usetidewatch.org/ https://www.usetidewatch.org/ https://www.usetidewatch.org/yields https://www.usetidewatch.org/api/pools https://www.usetidewatch.org/api/og?p=home; do
+            curl -sS -m 30 -o /dev/null "$U" -w "$U -> %{http_code} %{content_type} %{size_download}B %{redirect_url}\n"; done
+          echo; curl -sS -m 60 https://www.usetidewatch.org/api/telegram-setup; echo
