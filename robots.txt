@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tidewatch-olive.vercel.app/sitemap.xml
+Sitemap: https://www.usetidewatch.org/sitemap.xml

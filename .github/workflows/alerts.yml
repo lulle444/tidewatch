@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - run: curl -fsS --max-time 90 https://tidewatch-olive.vercel.app/api/check-alerts
+      - run: curl -fsS --max-time 90 https://www.usetidewatch.org/api/check-alerts

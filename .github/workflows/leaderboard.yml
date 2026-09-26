@@ -13,6 +13,6 @@ jobs:
     steps:
       # prints the response either way, and fails the job when the indexer reports an error
       - run: |
-          code=$(curl -sS --max-time 290 -o out.json -w "%{http_code}" https://tidewatch-olive.vercel.app/api/lb-index)
+          code=$(curl -sS --max-time 290 -o out.json -w "%{http_code}" https://www.usetidewatch.org/api/lb-index)
           cat out.json; echo
           test "$code" = 200

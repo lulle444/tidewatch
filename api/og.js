@@ -115,7 +115,7 @@ function card(c, logo){
       h({fontFamily: "IBM Plex Sans", fontWeight: 500, fontSize: 34, color: C.ink, marginTop: 18, maxWidth: 1000, lineHeight: 1.25}, c.label)),
     h({gap: 20}, c.stats.map(stat)),
     h({marginTop: 22, fontSize: 20, color: C.muted, justifyContent: "space-between"},
-      h({}, "tidewatch-olive.vercel.app" + c.path), h({}, "Live on-chain data · Not financial advice")));
+      h({}, "usetidewatch.org" + c.path), h({}, "Live on-chain data · Not financial advice")));
 }
 
 module.exports = async function handler(req, res){
