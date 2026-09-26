@@ -8,10 +8,10 @@ jobs:
     steps:
       - run: |
           set +e
-          for U in https://usetidewatch.org/ https://www.usetidewatch.org/ https://www.usetidewatch.org/yields https://www.usetidewatch.org/api/pools https://www.usetidewatch.org/api/og?p=home; do
+          for U in https://usetidewatch.org/ https://tidewatch-olive.vercel.app/leaderboard https://www.usetidewatch.org/ https://www.usetidewatch.org/yields https://www.usetidewatch.org/api/pools https://www.usetidewatch.org/api/og?p=home; do
             curl -sS -m 30 -o /dev/null "$U" -w "$U -> %{http_code} %{content_type} %{size_download}B %{redirect_url}\n"; done
           echo; curl -sS -m 60 https://www.usetidewatch.org/api/telegram-setup; echo
-          S=https://tidewatch-olive.vercel.app
+          S=https://www.usetidewatch.org
           curl -sS -m 60 "$S/api/pools" | python3 -c 'import json,sys; d=json.load(sys.stdin); p=d if isinstance(d,list) else d.get("pools",d.get("data",[])); print("pools:", len(p), "| not outliers:", sum(1 for x in p if not x.get("outlier")))'
           curl -sS -m 60 "$S/api/leaderboard" | python3 -c 'import json,sys; d=json.load(sys.stdin); [print("leaderboard", w, {k: v[k] for k in ("hours","wallets","ranked","volume","trades") if k in v}) for w, v in d.get("windows",{}).items()]; print("updated", d.get("updatedAt"), "lastRun", str(d.get("lastRun"))[:200])'
 

@@ -24,5 +24,18 @@
       "source": "/api/live-trades",
       "destination": "/api/leaderboard?live=1"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "tidewatch-olive.vercel.app"
+        }
+      ],
+      "destination": "https://www.usetidewatch.org/$1",
+      "permanent": true
+    }
   ]
 }
