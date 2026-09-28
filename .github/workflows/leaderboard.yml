@@ -13,6 +13,8 @@ jobs:
     steps:
       # prints the response either way, and fails the job when the indexer reports an error
       - run: |
-          code=$(curl -sS --max-time 290 -o out.json -w "%{http_code}" https://www.usetidewatch.org/api/lb-index)
+          # falls back to the vercel.app address (its /api is never redirected) if the domain doesn't resolve
+          H=https://www.usetidewatch.org; getent hosts www.usetidewatch.org >/dev/null || H=https://tidewatch-olive.vercel.app
+          code=$(curl -sS --max-time 290 -o out.json -w "%{http_code}" $H/api/lb-index)
           cat out.json; echo
           test "$code" = 200

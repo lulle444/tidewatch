@@ -9,4 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - run: curl -fsS --max-time 90 https://www.usetidewatch.org/api/check-alerts
+      # falls back to the vercel.app address (its /api is never redirected) if the domain doesn't answer
+      - run: curl -fsS --max-time 90 https://www.usetidewatch.org/api/check-alerts || curl -fsS --max-time 90 https://tidewatch-olive.vercel.app/api/check-alerts
