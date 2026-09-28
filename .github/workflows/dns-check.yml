@@ -1,0 +1,18 @@
+name: DNS check
+# Manual: shows how the domain resolves from GitHub's runners, through their own resolver and public ones.
+on: workflow_dispatch
+jobs:
+  dns:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: |
+          set +e
+          cat /etc/resolv.conf; resolvectl status 2>/dev/null | head -20
+          for N in www.usetidewatch.org usetidewatch.org; do
+            echo "=== $N"; getent hosts $N || echo "getent: no answer"
+            for R in "" @1.1.1.1 @8.8.8.8 @9.9.9.9 @168.63.129.16; do echo "--- dig $R"; dig +short $R $N; dig $R $N | grep -E "status|flags"; done
+          done
+          echo "=== NS / DS / DNSSEC"; dig +short NS usetidewatch.org; dig +short DS usetidewatch.org @1.1.1.1; dig +dnssec +cd usetidewatch.org @1.1.1.1 | grep -E "status|flags|RRSIG"
+          dig +trace www.usetidewatch.org | tail -25
+          curl -sS -m 20 -o /dev/null -w "curl www -> %{http_code}\n" https://www.usetidewatch.org/
